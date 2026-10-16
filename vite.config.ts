@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 /**
  * Never let the dev server hand out the SQLite database (it lives inside the project root,
@@ -21,7 +22,7 @@ const blockData = (): Plugin => ({
 });
 
 export default defineConfig({
-  plugins: [blockData(), react()],
+  plugins: [blockData(), react(), tailwindcss()],
   server: {
     host: 'localhost',
     port: 5173,

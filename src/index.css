@@ -1,6 +1,22 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+/* Theme (colors, fonts, shadows) stays in the JS config. */
+@config '../tailwind.config.js';
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Tailwind v4 changed these preflight defaults; keep the v3 look. */
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: rgb(var(--line));
+  }
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
 
 /* Notion-inspired palette. Values are "R G B" so Tailwind can apply opacity. */
 :root {
