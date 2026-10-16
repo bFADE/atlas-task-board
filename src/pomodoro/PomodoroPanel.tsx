@@ -41,6 +41,7 @@ function Panel({ onClose }: { onClose: () => void }) {
   const { tasks, pomodoroSettings } = useData();
   const { setSettingsOpen } = useUi();
   const [customText, setCustomText] = useState(String(p.customMinutes));
+  const [customInvalid, setCustomInvalid] = useState(false);
   useEffect(() => setCustomText(String(p.customMinutes)), [p.customMinutes]);
 
   const color = MODE_COLORS[p.mode];
@@ -87,19 +88,32 @@ function Panel({ onClose }: { onClose: () => void }) {
             type="number"
             min={1}
             max={600}
-            className="input w-20 text-center"
+            step={1}
+            className={`input w-20 text-center ${customInvalid ? 'border-danger' : ''}`}
+            aria-invalid={customInvalid}
             value={customText}
             disabled={p.phase === 'running'}
-            onChange={(e) => setCustomText(e.target.value)}
+            onChange={(e) => {
+              setCustomText(e.target.value);
+              setCustomInvalid(false);
+            }}
             onBlur={() => {
+              // Whole minutes only (1–600); anything else is rejected, not rounded.
               const n = Number(customText);
-              if (n >= 1 && n <= 600) p.setCustomMinutes(n);
+              const ok = customText.trim() !== '' && Number.isInteger(n) && n >= 1 && n <= 600;
+              setCustomInvalid(!ok);
+              if (ok) p.setCustomMinutes(n);
               else setCustomText(String(p.customMinutes));
             }}
             onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
           />
           {t('pomodoro.min')}
         </label>
+      )}
+      {p.mode === 'custom' && customInvalid && (
+        <p role="alert" className="mt-1 text-center text-xs text-danger">
+          {t('pomodoro.customInvalid')}
+        </p>
       )}
 
       <div className="my-4 text-center">

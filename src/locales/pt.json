@@ -200,7 +200,8 @@
     "start": "Iniciar",
     "title": "Pomodoro",
     "today": "Hoje",
-    "toggle": "Timer Pomodoro"
+    "toggle": "Timer Pomodoro",
+    "customInvalid": "Use minutos inteiros entre 1 e 600."
   },
   "board": {
     "dragColumn": "Arraste para reordenar as colunas",

@@ -57,7 +57,8 @@ export const formatClock = (ms: number) => {
 
 export function PomodoroProvider({ children }: { children: ReactNode }) {
   const { t, i18n } = useTranslation();
-  const { pomodoroSettings: settings, tasks, reportError } = useData();
+  const { pomodoroSettings: settings, tasks, reportError, loading } = useData();
+  const hadSavedState = useRef(load<TimerState | null>(STORAGE_KEY, null) !== null).current;
 
   const minutesFor = useCallback(
     (mode: TimerMode, custom: number) => (mode === 'custom' ? custom : settings[mode]),
@@ -102,8 +103,15 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     setState((s) => (s.phase === 'idle' ? { ...s, remainingMs: minutesFor(s.mode, s.customMinutes) * 60_000 } : s));
   }, [minutesFor]);
 
-  // The Custom field starts from the saved default (and follows it when the setting is edited).
+  // The Custom field starts from the saved default on first use and follows it when the setting is
+  // edited, but a value restored from a previous session is kept.
+  const syncedCustom = useRef<number | null>(null);
   useEffect(() => {
+    if (loading) return; // settings still hold the built-in defaults
+    const first = syncedCustom.current === null;
+    const changed = !first && syncedCustom.current !== settings.custom;
+    syncedCustom.current = settings.custom;
+    if (first ? hadSavedState : !changed) return;
     setState((s) =>
       s.mode === 'custom' && s.phase !== 'idle'
         ? s
@@ -113,7 +121,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
             remainingMs: s.phase === 'idle' && s.mode === 'custom' ? settings.custom * 60_000 : s.remainingMs,
           },
     );
-  }, [settings.custom]);
+  }, [settings.custom, loading, hadSavedState]);
 
   const refreshSummary = useCallback(() => {
     api.sessionSummary(todayStr()).then(setSummary).catch(() => {});
@@ -247,8 +255,8 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
       setMode: (m) => goIdle(m),
       setTaskId: (taskId) => setState((s) => ({ ...s, taskId })),
       setCustomMinutes(n) {
-        if (!Number.isFinite(n) || n < 1 || n > 600) return;
-        goIdle('custom', { customMinutes: Math.round(n) });
+        if (!Number.isInteger(n) || n < 1 || n > 600) return;
+        goIdle('custom', { customMinutes: n });
       },
     };
   }, [state, remaining, durationMs, summary, refreshSummary, minutesFor]);

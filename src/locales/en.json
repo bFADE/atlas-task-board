@@ -200,7 +200,8 @@
     "start": "Start",
     "title": "Pomodoro",
     "today": "Today",
-    "toggle": "Pomodoro timer"
+    "toggle": "Pomodoro timer",
+    "customInvalid": "Use whole minutes between 1 and 600."
   },
   "board": {
     "dragColumn": "Drag to reorder columns",
