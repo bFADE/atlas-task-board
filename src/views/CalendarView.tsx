@@ -27,6 +27,7 @@ import { load, save } from '../lib/storage';
 import { useData, useLang, useUi } from '../store';
 
 type Mode = 'month' | 'week';
+const MONTH_CELL_LINES = 3;
 
 const STATUS_ICON = { backlog: '📥', todo: '○', in_progress: '🔄', blocked: '🚫', done: '✅' } as const;
 
@@ -141,6 +142,10 @@ export function CalendarView({ tasks }: { tasks: Task[] }) {
                     isToday={ds === today}
                     outside={mode === 'month' && !isSameMonth(d, cursor)}
                     tall={mode === 'week'}
+                    onMore={() => {
+                      setCursor(d);
+                      setModePersist('week');
+                    }}
                     tasks={byDay.get(ds) ?? []}
                   />
                 );
@@ -161,17 +166,22 @@ function DayCell({
   outside,
   tall,
   tasks,
+  onMore,
 }: {
   date: string;
   dayNumber: number;
   isToday: boolean;
   outside: boolean;
   tall: boolean;
+  onMore: () => void;
   tasks: Task[];
 }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { openTask } = useUi();
+  // Month cells keep a fixed height: at most 3 lines, the last one becomes "+N more" when needed.
+  const visible = tall || tasks.length <= MONTH_CELL_LINES ? tasks : tasks.slice(0, MONTH_CELL_LINES - 1);
+  const hidden = tasks.length - visible.length;
   const { setNodeRef, isOver } = useDroppable({ id: `day:${date}` });
 
   return (
@@ -194,9 +204,22 @@ function DayCell({
         <span className="text-xs text-muted opacity-0 group-hover:opacity-100">+</span>
       </div>
       <div className="space-y-1">
-        {tasks.map((x) => (
+        {visible.map((x) => (
           <DraggableItem key={x.id} task={x} />
         ))}
+        {hidden > 0 && (
+          <button
+            type="button"
+            className="w-full rounded px-1.5 py-0.5 text-left text-xs font-medium text-muted hover:bg-hover hover:text-fg"
+            title={t('calendar.showDay')}
+            onClick={(e) => {
+              e.stopPropagation();
+              onMore();
+            }}
+          >
+            {t('calendar.more', { count: hidden })}
+          </button>
+        )}
       </div>
     </div>
   );

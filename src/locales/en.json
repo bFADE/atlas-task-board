@@ -116,7 +116,9 @@
     "today": "Today",
     "undated_one": "1 task without a due date",
     "undated_other": "{{count}} tasks without a due date",
-    "week": "Week"
+    "week": "Week",
+    "more": "+{{count}} more",
+    "showDay": "Show all tasks for this day (week view)"
   },
   "table": {
     "actions": "Actions",

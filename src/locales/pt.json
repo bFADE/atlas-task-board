@@ -116,7 +116,9 @@
     "today": "Hoje",
     "undated_one": "1 tarefa sem prazo",
     "undated_other": "{{count}} tarefas sem prazo",
-    "week": "Semana"
+    "week": "Semana",
+    "more": "+{{count}} mais",
+    "showDay": "Ver todas as tarefas deste dia (visão semanal)"
   },
   "table": {
     "actions": "Ações",
