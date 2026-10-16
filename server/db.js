@@ -90,19 +90,32 @@ function categoryIdByName(name) {
   return db.prepare('INSERT INTO categories (name, color) VALUES (?, ?)').run(name, color).lastInsertRowid;
 }
 
+/**
+ * Adds the sample tasks that are missing (an untouched sample with the same name is kept as is).
+ * Never deletes anything: a sample the user edited is no longer a sample (see markNotSample).
+ */
 export const insertSampleTasks = db.transaction(() => {
+  const exists = db.prepare('SELECT 1 FROM tasks WHERE is_sample = 1 AND name = ?');
   const insertTask = db.prepare(`
     INSERT INTO tasks (name, status, priority, due_date, due_time, notes, created_at, position, is_sample)
     VALUES (@name, @status, @priority, @due, @time, @notes, @created, @position, 1)`);
   const link = db.prepare('INSERT OR IGNORE INTO task_categories (task_id, category_id) VALUES (?, ?)');
   const maxPos = db.prepare('SELECT COALESCE(MAX(position), 0) AS m FROM tasks WHERE status = ?');
+  let inserted = 0;
   for (const t of SAMPLE_TASKS) {
+    if (exists.get(t.name)) continue;
+    inserted++;
     const position = maxPos.get(t.status).m + 1;
     const id = insertTask.run({ ...t, time: t.time ?? null, created: new Date().toISOString(), position }).lastInsertRowid;
     for (const c of t.cats) link.run(id, categoryIdByName(c));
   }
-  return SAMPLE_TASKS.length;
+  return inserted;
 });
+
+/** A sample task the user edits or tracks time against becomes their own task. */
+export function markNotSample(taskId) {
+  db.prepare('UPDATE tasks SET is_sample = 0 WHERE id = ? AND is_sample = 1').run(taskId);
+}
 
 export function removeSampleTasks() {
   return db.prepare('DELETE FROM tasks WHERE is_sample = 1').run().changes;

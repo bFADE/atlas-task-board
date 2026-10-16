@@ -145,7 +145,9 @@
     "title": "Configurações",
     "boardTitle": "Quadro",
     "boardHelp": "Arraste o cabeçalho de uma coluna no Quadro para mudar a ordem das colunas.",
-    "resetColumns": "Restaurar ordem padrão das colunas"
+    "resetColumns": "Restaurar ordem padrão das colunas",
+    "confirmRestoreSample": "Adicionar de volta as tarefas de exemplo que estão faltando? Nada é excluído, e as tarefas de exemplo que você editou continuam como suas.",
+    "sampleRestored_zero": "Todas as tarefas de exemplo já estão aqui."
   },
   "pomodoro": {
     "autoCycle": "Ciclo automático (4 pomodoros e depois uma pausa longa)",

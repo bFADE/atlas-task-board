@@ -10,6 +10,7 @@ import {
   setSetting,
   insertSampleTasks,
   removeSampleTasks,
+  markNotSample,
 } from './db.js';
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -146,6 +147,7 @@ app.patch('/api/tasks/:id', wrap((req) => {
       db.prepare(`UPDATE tasks SET ${cols.map((c) => `${c} = @${c}`).join(', ')} WHERE id = @id`).run({ ...fields, id });
     }
     if ('categoryIds' in req.body) setTaskCategories(id, req.body.categoryIds);
+    markNotSample(id);
   })();
   return getTask(id);
 }));
@@ -265,6 +267,7 @@ app.post('/api/sessions', wrap((req, res) => {
   const exists = taskId != null && db.prepare('SELECT 1 FROM tasks WHERE id = ?').get(taskId);
   db.prepare('INSERT INTO pomodoro_sessions (task_id, mode, duration_sec, completed_at, local_date) VALUES (?, ?, ?, ?, ?)')
     .run(exists ? taskId : null, mode, dur, new Date().toISOString(), localDate);
+  if (exists) markNotSample(taskId);
   res.status(201).json({ ok: true });
 }));
 
@@ -285,7 +288,6 @@ app.get('/api/sessions/summary', wrap((req) => {
 // ---------- Sample data ----------
 
 app.post('/api/sample', wrap(() => {
-  removeSampleTasks();
   return { inserted: insertSampleTasks() };
 }));
 

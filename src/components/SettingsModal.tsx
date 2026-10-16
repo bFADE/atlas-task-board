@@ -44,7 +44,12 @@ export function SettingsModal() {
             >
               {t('settings.removeSample')}
             </button>
-            <button className="btn" onClick={restoreSample}>
+            <button
+              className="btn"
+              onClick={async () => {
+                if (await confirm(t('settings.confirmRestoreSample'), t('settings.restoreSample'))) restoreSample();
+              }}
+            >
               {t('settings.restoreSample')}
             </button>
           </div>
