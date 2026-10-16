@@ -52,6 +52,12 @@ db.exec(`
   );
 `);
 
+// Migration: a client-generated key makes recording a finished timer idempotent (several tabs).
+if (!db.prepare('SELECT 1 FROM pragma_table_info(?) WHERE name = ?').get('pomodoro_sessions', 'session_key')) {
+  db.exec('ALTER TABLE pomodoro_sessions ADD COLUMN session_key TEXT');
+}
+db.exec('CREATE UNIQUE INDEX IF NOT EXISTS pomodoro_sessions_key ON pomodoro_sessions(session_key)');
+
 export const INITIAL_CATEGORIES = [
   { name: 'Comp and Rhetoric II', color: '#0B6E99' },
   { name: 'Intro CIS', color: '#6940A5' },

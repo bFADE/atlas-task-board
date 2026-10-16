@@ -42,7 +42,13 @@ export const api = {
   saveSettings: (s: { pomodoro?: Partial<PomodoroSettings>; boardColumns?: Status[] }) =>
     request<Settings>('PUT', '/api/settings', s),
 
-  recordSession: (s: { taskId: number | null; mode: 'pomodoro' | 'custom'; durationSec: number; localDate: string }) =>
+  recordSession: (s: {
+    taskId: number | null;
+    mode: 'pomodoro' | 'custom';
+    durationSec: number;
+    localDate: string;
+    sessionKey: string;
+  }) =>
     request<void>('POST', '/api/sessions', s),
   sessionSummary: (date: string) => request<SessionSummary>('GET', `/api/sessions/summary?date=${date}`),
 

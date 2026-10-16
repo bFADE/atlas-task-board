@@ -273,16 +273,22 @@ app.put('/api/settings', wrap((req) => {
 // ---------- Pomodoro sessions ----------
 
 app.post('/api/sessions', wrap((req, res) => {
-  const { taskId = null, mode, durationSec, localDate } = req.body;
+  const { taskId = null, mode, durationSec, localDate, sessionKey = null } = req.body;
+  if (sessionKey !== null && (typeof sessionKey !== 'string' || !sessionKey || sessionKey.length > 64)) {
+    throw new HttpError(400, 'invalid_session_key');
+  }
   if (!['pomodoro', 'custom'].includes(mode)) throw new HttpError(400, 'invalid_mode');
   if (!DATE_RE.test(localDate ?? '')) throw new HttpError(400, 'invalid_date');
   const dur = Math.round(Number(durationSec));
   if (!Number.isFinite(dur) || dur <= 0) throw new HttpError(400, 'invalid_duration');
   const exists = taskId != null && db.prepare('SELECT 1 FROM tasks WHERE id = ?').get(taskId);
-  db.prepare('INSERT INTO pomodoro_sessions (task_id, mode, duration_sec, completed_at, local_date) VALUES (?, ?, ?, ?, ?)')
-    .run(exists ? taskId : null, mode, dur, new Date().toISOString(), localDate);
+  // Same sessionKey twice (e.g. two tabs) → stored once.
+  const { changes } = db
+    .prepare(`INSERT OR IGNORE INTO pomodoro_sessions (task_id, mode, duration_sec, completed_at, local_date, session_key)
+              VALUES (?, ?, ?, ?, ?, ?)`)
+    .run(exists ? taskId : null, mode, dur, new Date().toISOString(), localDate, sessionKey);
   if (exists) markNotSample(taskId);
-  res.status(201).json({ ok: true });
+  res.status(changes ? 201 : 200).json({ ok: true, duplicate: !changes });
 }));
 
 app.get('/api/sessions/summary', wrap((req) => {

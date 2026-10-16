@@ -37,6 +37,18 @@ interface PomodoroCtx extends TimerState {
 
 const Ctx = createContext<PomodoroCtx | null>(null);
 const STORAGE_KEY = 'pomodoroState';
+const COMPLETED_KEY = 'pomodoroCompleted';
+
+/** First tab to see a timer end (identified by its endAt) wins; the others skip chime/notify/log. */
+function claimCompletion(endAt: number): boolean {
+  try {
+    if (localStorage.getItem(COMPLETED_KEY) === String(endAt)) return false;
+    localStorage.setItem(COMPLETED_KEY, String(endAt));
+  } catch {
+    /* storage unavailable: single tab, nothing to coordinate */
+  }
+  return true;
+}
 
 export const formatClock = (ms: number) => {
   const total = Math.max(0, Math.ceil(ms / 1000));
@@ -69,6 +81,21 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
   const remaining = state.phase === 'running' && state.endAt ? state.endAt - now : state.remainingMs;
 
   useEffect(() => save(STORAGE_KEY, state), [state]);
+
+  // Several tabs share one timer: adopt changes (start, pause, reset, completion) made in another tab.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return;
+      try {
+        setState(JSON.parse(e.newValue) as TimerState);
+        setTimeout(refreshSummary, 800); // the other tab may have just logged a session
+      } catch {
+        /* ignore malformed value */
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // Keep an idle timer in sync with edited durations.
   useEffect(() => {
@@ -111,6 +138,8 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
     const s = stateRef.current;
     if (s.phase !== 'running' || !s.endAt || completedFor.current === s.endAt) return;
     completedFor.current = s.endAt;
+    // Another tab already handled this completion; its new state arrives via the storage event.
+    if (!claimCompletion(s.endAt)) return;
 
     playChime();
     const lang = i18n.language;
@@ -133,6 +162,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
           mode: s.mode,
           durationSec: Math.round(fullMs / 1000),
           localDate: todayStr(),
+          sessionKey: String(s.endAt),
         })
         .then(refreshSummary)
         .catch(reportError);
