@@ -6,7 +6,8 @@ import {
   KeyboardSensor,
   PointerSensor,
   closestCenter,
-  closestCorners,
+  pointerWithin,
+  rectIntersection,
   useDroppable,
   useSensor,
   useSensors,
@@ -38,11 +39,28 @@ const COLUMN = 'column:';
 const columnId = (s: Status) => `${COLUMN}${s}`;
 const isColumn = (id: UniqueIdentifier) => String(id).startsWith(COLUMN);
 
-// Columns only collide with columns, and cards only with cards / column lists.
+const isList = (id: UniqueIdentifier) => String(id).startsWith('col:');
+
+/**
+ * Columns only collide with columns. For cards, the column under the pointer wins first, so a drop
+ * in the empty lower part of a column lands in that column (not a neighbour whose cards are closer).
+ */
 const collision: CollisionDetection = (args) => {
-  const dragColumn = isColumn(args.active.id);
-  const droppableContainers = args.droppableContainers.filter((c) => isColumn(c.id) === dragColumn);
-  return (dragColumn ? closestCenter : closestCorners)({ ...args, droppableContainers });
+  const { active, droppableContainers, pointerCoordinates } = args;
+  if (isColumn(active.id)) {
+    return closestCenter({ ...args, droppableContainers: droppableContainers.filter((c) => isColumn(c.id)) });
+  }
+  const lists = droppableContainers.filter((c) => isList(c.id));
+  const [list] = pointerWithin({ ...args, droppableContainers: lists });
+  if (!list) return rectIntersection({ ...args, droppableContainers: lists });
+
+  const cards = droppableContainers.filter(
+    (c) => !isList(c.id) && !isColumn(c.id) && c.data.current?.sortable?.containerId === list.id,
+  );
+  const lastBottom = Math.max(...cards.map((c) => c.rect.current?.bottom ?? -Infinity));
+  // Below the last card (or an empty column): target the list itself, i.e. append at the end.
+  if (!cards.length || !pointerCoordinates || pointerCoordinates.y > lastBottom) return [list];
+  return closestCenter({ ...args, droppableContainers: cards });
 };
 
 export function BoardView({ tasks, statuses }: { tasks: Task[]; statuses: Status[] }) {
@@ -175,7 +193,7 @@ function Column({ status, ids, taskMap }: { status: Status; ids: number[]; taskM
       aria-label={t(`status.${status}`)}
     >
       <ColumnHeader status={status} count={ids.length} handle={{ ...sortable.attributes, ...sortable.listeners }} />
-      <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+      <SortableContext id={colId(status)} items={ids} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
           className={`flex min-h-[60px] flex-1 flex-col gap-2 rounded-md p-2 transition ${isOver ? 'bg-hover' : ''}`}
