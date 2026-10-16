@@ -6,7 +6,7 @@
 
 ## Português
 
-Gerenciador de tarefas pessoal estilo Trello que roda 100% no seu computador (sem login, sem nuvem). Os dados ficam em `data/tasks.db` (SQLite).
+Gerenciador de tarefas pessoal estilo Trello que roda 100% no seu computador (sem login, sem nuvem). Os dados ficam em `data/atlas.db` (SQLite). Se você usava uma versão anterior, o arquivo antigo `data/tasks.db` é renomeado automaticamente na primeira execução, sem perder dados.
 
 ### Instalação
 
@@ -61,7 +61,7 @@ Copie a pasta `data/` (com o app parado) para fazer backup.
 
 ## English
 
-A Trello-style personal task manager that runs 100% on your computer (no login, no cloud). Data is stored in `data/tasks.db` (SQLite).
+A Trello-style personal task manager that runs 100% on your computer (no login, no cloud). Data is stored in `data/atlas.db` (SQLite). If you used an earlier version, the old `data/tasks.db` is renamed automatically on first start, without losing data.
 
 ### Install
 

@@ -7,8 +7,26 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataDir = path.join(root, 'data');
 fs.mkdirSync(dataDir, { recursive: true });
 
-export const DB_PATH = path.join(dataDir, 'tasks.db');
+export const DB_PATH = path.join(dataDir, 'atlas.db');
+migrateLegacyFile(path.join(dataDir, 'tasks.db'), DB_PATH);
 export const db = new Database(DB_PATH);
+
+/**
+ * One-time rename of the old data/tasks.db (+ -wal/-shm) to data/atlas.db, without losing data.
+ * Only runs when the old file exists and the new one doesn't. The WAL is checkpointed into the
+ * main file first; leftovers are renamed before the main file, so an interruption at any point
+ * still leaves a consistent pair for the next start.
+ */
+function migrateLegacyFile(oldPath, newPath) {
+  if (!fs.existsSync(oldPath) || fs.existsSync(newPath)) return;
+  const old = new Database(oldPath);
+  old.pragma('wal_checkpoint(TRUNCATE)');
+  old.close();
+  for (const suffix of ['-wal', '-shm', '']) {
+    if (fs.existsSync(oldPath + suffix)) fs.renameSync(oldPath + suffix, newPath + suffix);
+  }
+  console.log(`Renamed ${path.basename(oldPath)} to ${path.basename(newPath)}`);
+}
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
 
