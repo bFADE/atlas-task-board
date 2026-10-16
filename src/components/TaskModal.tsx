@@ -5,6 +5,7 @@ import { formatDateTime } from '../lib/dates';
 import { useData, useLang, useUi } from '../store';
 import { Modal } from './Modal';
 import { DateInput } from './DateInput';
+import { TimeInput } from './TimeInput';
 import { Pill } from './Badges';
 
 export function TaskModal() {
@@ -166,15 +167,7 @@ function TaskForm() {
           </label>
           <div className="flex flex-wrap items-start gap-2">
             <DateInput id="f-due" value={dueDate} onChange={setDueDate} />
-            <input
-              type="time"
-              className="input w-32"
-              aria-label={t('fields.dueTime')}
-              title={t('fields.dueTime')}
-              disabled={!dueDate}
-              value={dueTime ?? ''}
-              onChange={(e) => setDueTime(e.target.value || null)}
-            />
+            <TimeInput value={dueTime} onChange={setDueTime} disabled={!dueDate} />
             {dueDate && (
               <button
                 type="button"

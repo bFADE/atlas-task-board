@@ -227,5 +227,9 @@
     "title": "Não foi possível conectar ao servidor do Atlas",
     "body": "Suas tarefas estão seguras neste computador, mas o servidor local não está respondendo. Verifique se o “npm run dev” (ou “npm start”) está rodando no terminal e tente de novo.",
     "retry": "Tentar de novo"
+  },
+  "time": {
+    "placeholder": "HH:MM",
+    "invalid": "Use o formato HH:MM (ex.: 14:30)."
   }
 }

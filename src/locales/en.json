@@ -227,5 +227,9 @@
     "title": "Can't reach the Atlas server",
     "body": "Your tasks are safe on this computer, but the local server isn't responding. Make sure “npm run dev” (or “npm start”) is running in the terminal, then try again.",
     "retry": "Retry"
+  },
+  "time": {
+    "placeholder": "h:mm AM/PM",
+    "invalid": "Use a time like 2:30 PM."
   }
 }

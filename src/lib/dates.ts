@@ -43,6 +43,33 @@ export function formatTime(t: string, lang: Lang): string {
   return new Date(2000, 0, 1, h, m).toLocaleTimeString(localeOf(lang), { hour: 'numeric', minute: '2-digit' });
 }
 
+/** HH:MM → "14:30" (pt) or "2:30 PM" (en), for the editable time field. */
+export function formatTimeInput(t: string, lang: Lang): string {
+  const [h, m] = t.split(':').map(Number);
+  if (lang === 'pt') return `${pad(h)}:${pad(m)}`;
+  return `${h % 12 || 12}:${pad(m)} ${h < 12 ? 'AM' : 'PM'}`;
+}
+
+/**
+ * Parses a typed time into HH:MM, or null if invalid. Accepts 24 h ("9:05", "21:30") in both
+ * languages and 12 h ("9:05 pm", "7 am") in English.
+ */
+export function parseLocalTime(text: string, lang: Lang): string | null {
+  const m = text.trim().toLowerCase().match(/^(\d{1,2})(?:[:h.](\d{2}))?\s*(am|pm|a\.m\.|p\.m\.)?$/);
+  if (!m) return null;
+  let h = Number(m[1]);
+  const min = m[2] === undefined ? 0 : Number(m[2]);
+  const suffix = m[3]?.replace(/\./g, '');
+  if (min > 59) return null;
+  if (suffix) {
+    if (lang !== 'en' || h < 1 || h > 12) return null;
+    h = (h % 12) + (suffix === 'pm' ? 12 : 0);
+  } else if (m[2] === undefined || h > 23) {
+    return null; // a bare "7" is ambiguous; require minutes in 24 h form
+  }
+  return `${pad(h)}:${pad(min)}`;
+}
+
 export function formatDue(task: Pick<Task, 'dueDate' | 'dueTime'>, lang: Lang): string {
   if (!task.dueDate) return '';
   return task.dueTime ? `${formatDate(task.dueDate, lang)} ${formatTime(task.dueTime, lang)}` : formatDate(task.dueDate, lang);
