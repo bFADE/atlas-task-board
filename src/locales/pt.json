@@ -110,7 +110,8 @@
     "clear": "Limpar filtros",
     "filterBy": "Filtrar por {{field}}",
     "noOptions": "Nenhuma opção",
-    "search": "Buscar tarefas…"
+    "search": "Buscar tarefas…",
+    "noResults": "Nenhuma tarefa corresponde a estes filtros."
   },
   "calendar": {
     "addOn": "Clique para criar uma tarefa em {{date}}",

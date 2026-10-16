@@ -110,7 +110,8 @@
     "clear": "Clear filters",
     "filterBy": "Filter by {{field}}",
     "noOptions": "No options",
-    "search": "Search tasks…"
+    "search": "Search tasks…",
+    "noResults": "No tasks match these filters."
   },
   "calendar": {
     "addOn": "Click to add a task on {{date}}",

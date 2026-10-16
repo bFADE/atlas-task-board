@@ -54,10 +54,12 @@ function Shell() {
   // Typing stays responsive: the (expensive) filtered views update with a deferred search value.
   const search = useDeferredValue(filters.search);
   const { categories, priorities, statuses } = filters;
+  const filtersActive = !!(filters.search.trim() || categories.length || priorities.length || statuses.length);
   const filtered = useMemo(
     () => applyFilters(tasks, { search, categories, priorities, statuses }),
     [tasks, search, categories, priorities, statuses],
   );
+  const noMatches = filtersActive && tasks.length > 0 && filtered.length === 0;
 
   return (
     <div className="min-h-screen bg-surface text-fg">
@@ -69,6 +71,15 @@ function Shell() {
       />
       <FilterBar filters={filters} onChange={setFilters} />
       <main className="mx-auto max-w-[1600px] pb-20">
+        {/* Tables have their own empty row; Board and Calendar would otherwise just look empty. */}
+        {!loading && !loadError && noMatches && (view === 'board' || view === 'calendar') && (
+          <div role="status" className="mx-4 mb-3 flex flex-wrap items-center gap-2 rounded-md bg-panel px-4 py-2.5 text-sm sm:mx-6">
+            <span className="text-muted">{t('filters.noResults')}</span>
+            <button className="btn-text text-accent" onClick={() => setFilters(EMPTY_FILTERS)}>
+              {t('filters.clear')}
+            </button>
+          </div>
+        )}
         {loading ? (
           <p className="px-6 py-10 text-center text-muted">{t('common.loading')}</p>
         ) : loadError ? (
