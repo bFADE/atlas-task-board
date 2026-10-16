@@ -75,6 +75,20 @@ function TaskForm() {
     else setSaveFailed(true);
   };
 
+  const dirty =
+    name !== (init.name ?? '') ||
+    status !== (init.status ?? 'todo') ||
+    priority !== (init.priority ?? null) ||
+    dueDate !== (init.dueDate ?? null) ||
+    (dueTime ?? null) !== (init.dueTime ?? null) ||
+    notes !== (init.notes ?? '') ||
+    [...categoryIds].sort().join() !== [...(init.categoryIds ?? [])].sort().join();
+
+  // Esc, backdrop click and ✕ ask before throwing away unsaved edits.
+  const requestClose = async () => {
+    if (!dirty || (await confirm(t('task.discardConfirm'), t('task.discard')))) closeTask();
+  };
+
   const remove = async () => {
     if (!task) return;
     if (await confirm(t('task.confirmDelete', { name: task.name }))) {
@@ -86,7 +100,7 @@ function TaskForm() {
   return (
     <Modal
       title={task ? t('task.edit') : t('task.new')}
-      onClose={closeTask}
+      onClose={requestClose}
       footer={
         <>
           {task && (

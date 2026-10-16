@@ -89,7 +89,9 @@
     "new": "Nova tarefa",
     "newShort": "Nova tarefa",
     "overdue": "Atrasada",
-    "saveFailed": "Não foi possível salvar. Suas alterações continuam aqui para você tentar de novo."
+    "saveFailed": "Não foi possível salvar. Suas alterações continuam aqui para você tentar de novo.",
+    "discardConfirm": "Descartar as alterações não salvas desta tarefa?",
+    "discard": "Descartar"
   },
   "category": {
     "add": "Adicionar categoria",

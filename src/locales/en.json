@@ -89,7 +89,9 @@
     "new": "New task",
     "newShort": "New task",
     "overdue": "Overdue",
-    "saveFailed": "Couldn't save your changes. They are still here, so you can try again."
+    "saveFailed": "Couldn't save your changes. They are still here, so you can try again.",
+    "discardConfirm": "Discard your unsaved changes to this task?",
+    "discard": "Discard"
   },
   "category": {
     "add": "Add category",
