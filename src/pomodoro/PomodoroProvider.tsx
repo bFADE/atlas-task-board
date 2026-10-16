@@ -246,11 +246,20 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
         );
       },
       reset: () => goIdle(state.mode),
-      // Skip jumps to the next mode without counting the current pomodoro as completed.
+      // Skip follows the same cycle as a finished timer (the 4th pomodoro leads to the long break)
+      // but records no session and plays nothing. With auto-cycle on, a started timer keeps going.
       skip() {
-        if (state.mode === 'pomodoro') goIdle('short');
-        else if (state.mode === 'long') goIdle('pomodoro', { cycle: 0 });
-        else goIdle('pomodoro');
+        const next = state.mode === 'custom' ? { mode: 'pomodoro' as const, cycle: state.cycle } : nextMode(state.mode, state.cycle);
+        const nextMs = minutesFor(next.mode, state.customMinutes) * 60_000;
+        const auto = settings.autoCycle && state.phase !== 'idle';
+        setState((s) => ({
+          ...s,
+          mode: next.mode,
+          cycle: next.cycle,
+          phase: auto ? 'running' : 'idle',
+          endAt: auto ? Date.now() + nextMs : null,
+          remainingMs: nextMs,
+        }));
       },
       setMode: (m) => goIdle(m),
       setTaskId: (taskId) => setState((s) => ({ ...s, taskId })),
@@ -259,7 +268,7 @@ export function PomodoroProvider({ children }: { children: ReactNode }) {
         goIdle('custom', { customMinutes: n });
       },
     };
-  }, [state, remaining, durationMs, summary, refreshSummary, minutesFor]);
+  }, [state, remaining, durationMs, summary, refreshSummary, minutesFor, settings.autoCycle]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
