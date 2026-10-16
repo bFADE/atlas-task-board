@@ -9,7 +9,8 @@
     "delete": "Delete",
     "loading": "Loading…",
     "none": "—",
-    "save": "Save"
+    "save": "Save",
+    "undo": "Undo"
   },
   "confirm": {
     "title": "Are you sure?"
@@ -194,7 +195,8 @@
     "toggle": "Pomodoro timer"
   },
   "board": {
-    "dragColumn": "Drag to reorder columns"
+    "dragColumn": "Drag to reorder columns",
+    "columnsMoved": "Column order changed."
   },
   "selection": {
     "all": "Select all",

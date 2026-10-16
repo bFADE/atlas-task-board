@@ -9,7 +9,8 @@
     "delete": "Excluir",
     "loading": "Carregando…",
     "none": "—",
-    "save": "Salvar"
+    "save": "Salvar",
+    "undo": "Desfazer"
   },
   "confirm": {
     "title": "Tem certeza?"
@@ -194,7 +195,8 @@
     "toggle": "Timer Pomodoro"
   },
   "board": {
-    "dragColumn": "Arraste para reordenar as colunas"
+    "dragColumn": "Arraste para reordenar as colunas",
+    "columnsMoved": "Ordem das colunas alterada."
   },
   "selection": {
     "all": "Selecionar todas",

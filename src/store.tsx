@@ -6,10 +6,16 @@ import type { Lang } from './lib/dates';
 
 // ---------- Toasts ----------
 
+interface ToastAction {
+  label: string;
+  run: () => void;
+}
+
 interface Toast {
   id: number;
   text: string;
   kind: 'error' | 'info';
+  action?: ToastAction;
 }
 
 // ---------- Data ----------
@@ -33,7 +39,7 @@ interface DataCtx {
   savePomodoroSettings: (p: Partial<PomodoroSettings>) => Promise<boolean>;
   restoreSample: () => Promise<void>;
   removeSample: () => Promise<void>;
-  notify: (text: string, kind?: Toast['kind']) => void;
+  notify: (text: string, kind?: Toast['kind'], action?: ToastAction) => void;
   reportError: (err: unknown) => void;
 }
 
@@ -51,11 +57,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
 
-  const notify = useCallback((text: string, kind: Toast['kind'] = 'info') => {
-    const id = ++toastId.current;
-    setToasts((ts) => [...ts, { id, text, kind }]);
-    setTimeout(() => setToasts((ts) => ts.filter((x) => x.id !== id)), 4000);
-  }, []);
+  const dismiss = useCallback((id: number) => setToasts((ts) => ts.filter((x) => x.id !== id)), []);
+  const notify = useCallback(
+    (text: string, kind: Toast['kind'] = 'info', action?: ToastAction) => {
+      const id = ++toastId.current;
+      setToasts((ts) => [...ts, { id, text, kind, action }]);
+      setTimeout(() => dismiss(id), action ? 8000 : 4000);
+    },
+    [dismiss],
+  );
 
   const reportError = useCallback(
     (err: unknown) => {
@@ -226,11 +236,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
           <div
             key={x.id}
             role={x.kind === 'error' ? 'alert' : 'status'}
-            className={`pointer-events-auto rounded-md px-4 py-2 text-sm text-white shadow-pop ${
+            className={`pointer-events-auto flex items-center gap-3 rounded-md px-4 py-2 text-sm text-white shadow-pop ${
               x.kind === 'error' ? 'bg-danger' : 'bg-neutral-800'
             }`}
           >
             {x.text}
+            {x.action && (
+              <button
+                className="rounded px-2 py-0.5 font-semibold text-sky-300 hover:bg-white/10"
+                onClick={() => {
+                  x.action!.run();
+                  dismiss(x.id);
+                }}
+              >
+                {x.action.label}
+              </button>
+            )}
           </div>
         ))}
       </div>

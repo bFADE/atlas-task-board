@@ -32,6 +32,20 @@ import { useData, useLang, useUi } from '../store';
 import { CategoryTags, PriorityBadge } from '../components/Badges';
 
 type Columns = Record<Status, number[]>;
+
+const HANDLE = '[data-column-handle]';
+
+/**
+ * One pointer sensor for the whole board (dnd-kit merges listeners per event name, so two pointer
+ * sensors would override each other). Column drags start only from the ⠿ handle (the only element
+ * with column listeners) and need a longer movement, so columns don't get moved by accident.
+ */
+class BoardPointerSensor extends PointerSensor {
+  constructor(props: ConstructorParameters<typeof PointerSensor>[0]) {
+    const onHandle = !!(props.event.target as Element | null)?.closest?.(HANDLE);
+    super({ ...props, options: { ...props.options, activationConstraint: { distance: onHandle ? 12 : 5 } } });
+  }
+}
 /** Droppable list area of a column (cards are dropped here). */
 const colId = (s: Status) => `col:${s}`;
 /** Sortable column itself (dragged by its header to reorder the board). */
@@ -64,7 +78,8 @@ const collision: CollisionDetection = (args) => {
 };
 
 export function BoardView({ tasks, statuses }: { tasks: Task[]; statuses: Status[] }) {
-  const { updateTask, boardColumns, saveBoardColumns } = useData();
+  const { t } = useTranslation();
+  const { updateTask, boardColumns, saveBoardColumns, notify } = useData();
   const taskMap = useMemo(() => new Map(tasks.map((x) => [x.id, x])), [tasks]);
   const visible = statuses.length ? boardColumns.filter((s) => statuses.includes(s)) : boardColumns;
   const [activeColumn, setActiveColumn] = useState<Status | null>(null);
@@ -81,7 +96,7 @@ export function BoardView({ tasks, statuses }: { tasks: Task[]; statuses: Status
   const cols = dragCols ?? grouped;
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(BoardPointerSensor),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
 
@@ -123,7 +138,11 @@ export function BoardView({ tasks, statuses }: { tasks: Task[]; statuses: Status
       if (!over || over.id === active.id) return;
       const from = boardColumns.indexOf(String(active.id).slice(COLUMN.length) as Status);
       const to = boardColumns.indexOf(String(over.id).slice(COLUMN.length) as Status);
-      if (from >= 0 && to >= 0) saveBoardColumns(arrayMove(boardColumns, from, to));
+      if (from >= 0 && to >= 0) {
+        const previous = boardColumns;
+        saveBoardColumns(arrayMove(boardColumns, from, to));
+        notify(t('board.columnsMoved'), 'info', { label: t('common.undo'), run: () => saveBoardColumns(previous) });
+      }
       return;
     }
     const c = dragCols;
@@ -192,7 +211,12 @@ function Column({ status, ids, taskMap }: { status: Status; ids: number[]; taskM
       className={`flex min-w-[16rem] flex-1 basis-0 flex-col rounded-lg bg-panel ${sortable.isDragging ? 'opacity-40' : ''}`}
       aria-label={t(`status.${status}`)}
     >
-      <ColumnHeader status={status} count={ids.length} handle={{ ...sortable.attributes, ...sortable.listeners }} />
+      <ColumnHeader
+        status={status}
+        count={ids.length}
+        handleRef={sortable.setActivatorNodeRef}
+        handle={{ ...sortable.attributes, ...sortable.listeners }}
+      />
       <SortableContext id={colId(status)} items={ids} strategy={verticalListSortingStrategy}>
         <div
           ref={setNodeRef}
@@ -218,28 +242,36 @@ function ColumnHeader({
   status,
   count,
   handle,
+  handleRef,
   overlay,
 }: {
   status: Status;
   count: number;
   handle?: object;
+  handleRef?: (el: HTMLElement | null) => void;
   overlay?: boolean;
 }) {
   const { t } = useTranslation();
   return (
     <header
-      {...handle}
-      title={overlay ? undefined : t('board.dragColumn')}
-      className={`group/h flex cursor-grab items-center gap-2 rounded-t-lg px-3 pb-1 pt-3 active:cursor-grabbing ${
+      className={`group/h flex items-center gap-2 rounded-t-lg px-3 pb-1 pt-3 ${
         overlay ? 'w-64 rounded-lg bg-panel pb-3 shadow-pop' : ''
       }`}
     >
       <span className="h-2 w-2 rounded-full" style={{ backgroundColor: STATUS_COLORS[status] }} />
       <h2 className="text-sm font-semibold">{t(`status.${status}`)}</h2>
       <span className="text-xs text-muted">{count}</span>
-      <span className="ml-auto text-muted opacity-0 transition group-hover/h:opacity-100" aria-hidden="true">
+      <button
+        type="button"
+        ref={handleRef}
+        data-column-handle
+        {...handle}
+        title={t('board.dragColumn')}
+        aria-label={t('board.dragColumn')}
+        className="ml-auto flex h-6 w-6 cursor-grab touch-none items-center justify-center rounded text-muted opacity-40 transition hover:bg-hover hover:text-fg focus:opacity-100 active:cursor-grabbing group-hover/h:opacity-100"
+      >
         ⠿
-      </span>
+      </button>
     </header>
   );
 }
