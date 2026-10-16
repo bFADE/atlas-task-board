@@ -89,11 +89,19 @@ export function setSetting(key, value) {
     .run(key, JSON.stringify(value));
 }
 
-function categoryIdByName(name) {
+/**
+ * Category id for a sample category, tracked by id (settings.sampleCategories: name → id) so that
+ * renaming it (e.g. "Intro CIS" → "CIS 101") doesn't make a restore create a duplicate.
+ * Only a category that no longer exists is recreated.
+ */
+function sampleCategoryId(name) {
+  const ids = getSetting('sampleCategories', {});
+  if (ids[name] && db.prepare('SELECT 1 FROM categories WHERE id = ?').get(ids[name])) return ids[name];
   const row = db.prepare('SELECT id FROM categories WHERE name = ?').get(name);
-  if (row) return row.id;
   const color = INITIAL_CATEGORIES.find((c) => c.name === name)?.color ?? '#9B9A97';
-  return db.prepare('INSERT INTO categories (name, color) VALUES (?, ?)').run(name, color).lastInsertRowid;
+  const id = row ? row.id : Number(db.prepare('INSERT INTO categories (name, color) VALUES (?, ?)').run(name, color).lastInsertRowid);
+  setSetting('sampleCategories', { ...ids, [name]: id });
+  return id;
 }
 
 /**
@@ -113,7 +121,7 @@ export const insertSampleTasks = db.transaction(() => {
     inserted++;
     const position = maxPos.get(t.status).m + 1;
     const id = insertTask.run({ ...t, time: t.time ?? null, created: new Date().toISOString(), position }).lastInsertRowid;
-    for (const c of t.cats) link.run(id, categoryIdByName(c));
+    for (const c of t.cats) link.run(id, sampleCategoryId(c));
   }
   return inserted;
 });
@@ -127,12 +135,20 @@ export function removeSampleTasks() {
   return db.prepare('DELETE FROM tasks WHERE is_sample = 1').run().changes;
 }
 
+// Migration (DBs created before sample categories were tracked by id): map the ones that still exist.
+if (getSetting('initialized', false) && !getSetting('sampleCategories', null)) {
+  const map = {};
+  for (const c of INITIAL_CATEGORIES) {
+    const row = db.prepare('SELECT id FROM categories WHERE name = ? ORDER BY id LIMIT 1').get(c.name);
+    if (row) map[c.name] = row.id;
+  }
+  setSetting('sampleCategories', map);
+}
+
 // First run: create the initial categories and the sample tasks.
 if (!getSetting('initialized', false)) {
   db.transaction(() => {
-    for (const c of INITIAL_CATEGORIES) {
-      db.prepare('INSERT OR IGNORE INTO categories (name, color) VALUES (?, ?)').run(c.name, c.color);
-    }
+    for (const c of INITIAL_CATEGORIES) sampleCategoryId(c.name);
     insertSampleTasks();
     setSetting('initialized', true);
   })();
