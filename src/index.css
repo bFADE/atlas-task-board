@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Notion-inspired palette. Values are "R G B" so Tailwind can apply opacity. */
+:root {
+  --surface: 255 255 255;
+  --panel: 247 247 245;
+  --line: 233 233 231;
+  --hover: 239 239 237;
+  --fg: 55 53 47;
+  --muted: 120 119 116;
+  --accent: 35 131 226;
+  --danger: 224 62 62;
+  color-scheme: light;
+}
+
+.dark {
+  --surface: 25 25 25;
+  --panel: 32 32 32;
+  --line: 47 47 47;
+  --hover: 44 44 44;
+  --fg: 230 230 229;
+  --muted: 155 155 152;
+  --accent: 82 156 230;
+  --danger: 235 87 87;
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-surface text-fg antialiased;
+}
+
+@layer components {
+  /* Translucent badge tinted by --tint; text is lightened in dark mode for contrast. */
+  .tint {
+    background-color: color-mix(in srgb, var(--tint) 15%, transparent);
+    color: var(--tint);
+  }
+  .dark .tint {
+    background-color: color-mix(in srgb, var(--tint) 28%, transparent);
+    color: color-mix(in srgb, var(--tint) 55%, white);
+  }
+  .btn {
+    @apply inline-flex items-center gap-1 whitespace-nowrap rounded-md border border-line bg-surface px-3 py-1.5 text-sm font-medium text-fg transition hover:bg-hover disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply border-accent bg-accent text-white hover:bg-accent/90;
+  }
+  .btn-danger {
+    @apply border-danger bg-danger text-white hover:bg-danger/90;
+  }
+  .btn-ghost-danger {
+    @apply border-transparent bg-transparent text-danger hover:bg-danger/10;
+  }
+  .btn-text {
+    @apply rounded px-2 py-1 text-sm text-muted hover:bg-hover hover:text-fg;
+  }
+  .btn-icon {
+    @apply inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-sm text-muted transition hover:bg-hover hover:text-fg;
+  }
+  .input {
+    @apply w-full rounded-md border border-line bg-surface px-2.5 py-1.5 text-sm text-fg outline-none transition placeholder:text-muted/70 focus:border-accent focus:ring-2 focus:ring-accent/20 disabled:opacity-50;
+  }
+  .field-label {
+    @apply text-sm text-muted;
+  }
+  .section-title {
+    @apply mb-3 text-sm font-semibold uppercase tracking-wide text-muted;
+  }
+}

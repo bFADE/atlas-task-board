@@ -1,0 +1,210 @@
+{
+  "app": {
+    "title": "Atlas"
+  },
+  "common": {
+    "add": "Adicionar",
+    "cancel": "Cancelar",
+    "close": "Fechar",
+    "delete": "Excluir",
+    "loading": "Carregando…",
+    "none": "—",
+    "save": "Salvar"
+  },
+  "confirm": {
+    "title": "Tem certeza?"
+  },
+  "errors": {
+    "category_exists": "Já existe uma categoria com esse nome.",
+    "category_not_found": "Essa categoria não existe mais.",
+    "invalid_categories": "Categorias inválidas.",
+    "invalid_color": "Cor inválida.",
+    "invalid_date": "Data inválida.",
+    "invalid_duration": "As durações devem ficar entre 1 e 600 minutos.",
+    "invalid_json": "Requisição inválida.",
+    "invalid_mode": "Modo do timer inválido.",
+    "invalid_position": "Posição inválida.",
+    "invalid_priority": "Prioridade inválida.",
+    "invalid_status": "Status inválido.",
+    "invalid_time": "Horário inválido.",
+    "name_required": "O nome da tarefa é obrigatório.",
+    "network": "Não foi possível falar com o servidor local. O “npm run dev” está rodando?",
+    "not_found": "Não encontrado.",
+    "server_error": "Algo deu errado. Tente novamente.",
+    "task_not_found": "Essa tarefa não existe mais.",
+    "invalid_columns": "Ordem de colunas inválida.",
+    "invalid_ids": "Seleção inválida."
+  },
+  "status": {
+    "backlog": "📥 Backlog",
+    "todo": "A fazer",
+    "in_progress": "🔄 Em andamento",
+    "blocked": "🚫 Bloqueado",
+    "done": "✅ Concluído"
+  },
+  "priority": {
+    "high": "🔴 Alta",
+    "medium": "🟡 Média",
+    "low": "🟢 Baixa"
+  },
+  "views": {
+    "board": "🗂️ Quadro",
+    "calendar": "📅 Calendário",
+    "active": "📋 Todas as tarefas ativas",
+    "all": "Visão padrão"
+  },
+  "header": {
+    "darkMode": "Mudar para o tema escuro",
+    "language": "Idioma",
+    "lang_en": "English",
+    "lang_pt": "Português",
+    "lightMode": "Mudar para o tema claro",
+    "views": "Visões"
+  },
+  "fields": {
+    "category": "Categoria",
+    "created": "Criada em",
+    "dueDate": "Prazo",
+    "dueTime": "Horário (opcional)",
+    "name": "Nome da tarefa",
+    "namePlaceholder": "Nome da tarefa",
+    "notes": "Notas",
+    "notesPlaceholder": "Adicione notas…",
+    "priority": "Prioridade",
+    "status": "Status"
+  },
+  "task": {
+    "clearDate": "Limpar prazo",
+    "confirmDelete": "Excluir a tarefa “{{name}}”? Não é possível desfazer.",
+    "edit": "Editar tarefa",
+    "nameRequired": "O nome da tarefa é obrigatório.",
+    "new": "Nova tarefa",
+    "newShort": "Nova tarefa",
+    "overdue": "Atrasada"
+  },
+  "category": {
+    "add": "Adicionar categoria",
+    "color": "Escolher cor",
+    "confirmDelete_zero": "Excluir a categoria “{{name}}”?",
+    "confirmDelete_one": "Excluir a categoria “{{name}}”? Ela será removida de 1 tarefa.",
+    "confirmDelete_other": "Excluir a categoria “{{name}}”? Ela será removida de {{count}} tarefas.",
+    "customColor": "Cor personalizada",
+    "delete": "Excluir categoria",
+    "empty": "Nenhuma categoria ainda.",
+    "newPlaceholder": "Nova categoria…",
+    "rename": "Renomear categoria"
+  },
+  "date": {
+    "invalid": "Use o formato DD/MM/AAAA.",
+    "pick": "Abrir seletor de data",
+    "placeholder": "DD/MM/AAAA"
+  },
+  "filters": {
+    "clear": "Limpar filtros",
+    "filterBy": "Filtrar por {{field}}",
+    "noOptions": "Nenhuma opção",
+    "search": "Buscar tarefas…"
+  },
+  "calendar": {
+    "addOn": "Clique para criar uma tarefa em {{date}}",
+    "month": "Mês",
+    "next": "Próximo",
+    "previous": "Anterior",
+    "today": "Hoje",
+    "undated_one": "1 tarefa sem prazo",
+    "undated_other": "{{count}} tarefas sem prazo",
+    "week": "Semana"
+  },
+  "table": {
+    "actions": "Ações",
+    "count_zero": "Nenhuma tarefa",
+    "count_one": "1 tarefa",
+    "count_other": "{{count}} tarefas",
+    "empty": "Nenhuma tarefa encontrada.",
+    "sortBy": "Ordenar por {{field}}"
+  },
+  "settings": {
+    "categoriesTitle": "Categorias",
+    "confirmRemoveSample_one": "Remover 1 tarefa de exemplo? Suas tarefas serão mantidas.",
+    "confirmRemoveSample_other": "Remover {{count}} tarefas de exemplo? Suas tarefas serão mantidas.",
+    "durationInvalid": "As durações devem ser números inteiros entre 1 e 600.",
+    "pomodoroTitle": "Timer Pomodoro",
+    "removeSample": "Remover dados de exemplo",
+    "restoreSample": "Restaurar dados de exemplo",
+    "sampleHelp_zero": "Não há tarefas de exemplo no momento.",
+    "sampleHelp_one": "Há 1 tarefa de exemplo. Removê-la mantém suas próprias tarefas e categorias.",
+    "sampleHelp_other": "Há {{count}} tarefas de exemplo. Removê-las mantém suas próprias tarefas e categorias.",
+    "sampleRemoved_zero": "Não havia tarefas de exemplo para remover.",
+    "sampleRemoved_one": "1 tarefa de exemplo removida.",
+    "sampleRemoved_other": "{{count}} tarefas de exemplo removidas.",
+    "sampleRestored_one": "1 tarefa de exemplo adicionada.",
+    "sampleRestored_other": "{{count}} tarefas de exemplo adicionadas.",
+    "sampleTitle": "Dados de exemplo",
+    "saved": "Configurações salvas.",
+    "title": "Configurações",
+    "boardTitle": "Quadro",
+    "boardHelp": "Arraste o cabeçalho de uma coluna no Quadro para mudar a ordem das colunas.",
+    "resetColumns": "Restaurar ordem padrão das colunas"
+  },
+  "pomodoro": {
+    "autoCycle": "Ciclo automático (4 pomodoros e depois uma pausa longa)",
+    "autoOff": "Ciclo automático: desligado",
+    "autoOn": "Ciclo automático: ligado",
+    "completed_zero": "pomodoros",
+    "completed_one": "pomodoro",
+    "completed_other": "pomodoros",
+    "customMinutes": "Minutos:",
+    "cycle_one": "{{count}}/4 neste ciclo",
+    "cycle_other": "{{count}}/4 neste ciclo",
+    "cycleHint": "Uma pausa longa vem depois de 4 pomodoros",
+    "focusMinutes": "minutos de foco",
+    "linkTask": "Trabalhando em",
+    "min": "min",
+    "modes": {
+      "pomodoro": "Pomodoro",
+      "short": "Pausa curta",
+      "long": "Pausa longa",
+      "custom": "Personalizado"
+    },
+    "noSessions": "Nenhuma sessão concluída hoje ainda.",
+    "noTask": "Nenhuma tarefa",
+    "notify": {
+      "pomodoroTitle": "🍅 Pomodoro concluído!",
+      "pomodoroBody": "Bom trabalho. Hora de uma pausa.",
+      "shortTitle": "☕ A pausa curta acabou",
+      "shortBody": "De volta ao foco.",
+      "longTitle": "🌿 A pausa longa acabou",
+      "longBody": "Pronto para um novo ciclo?",
+      "customTitle": "⏰ O tempo acabou!",
+      "customBody": "Seu timer personalizado terminou."
+    },
+    "pause": "Pausar",
+    "reset": "Reiniciar",
+    "resetHint": "Recomeçar o timer atual",
+    "resume": "Continuar",
+    "settings": "Configurações do timer",
+    "skip": "Pular",
+    "skipHint": "Pular para o próximo modo",
+    "start": "Iniciar",
+    "title": "Pomodoro",
+    "today": "Hoje",
+    "toggle": "Timer Pomodoro"
+  },
+  "board": {
+    "dragColumn": "Arraste para reordenar as colunas"
+  },
+  "selection": {
+    "all": "Selecionar todas",
+    "row": "Selecionar “{{name}}”",
+    "clear": "Limpar seleção",
+    "delete": "Excluir selecionadas",
+    "deleteHint": "Excluir as tarefas selecionadas (Delete)",
+    "count_one": "1 tarefa selecionada",
+    "count_other": "{{count}} tarefas selecionadas",
+    "confirmDelete_one": "Excluir 1 tarefa? Não é possível desfazer.",
+    "confirmDelete_other": "Excluir {{count}} tarefas? Não é possível desfazer.",
+    "deleted_one": "1 tarefa excluída.",
+    "deleted_other": "{{count}} tarefas excluídas.",
+    "hint": "Dica: {{mod}}A seleciona tudo · Delete exclui as selecionadas · Shift+clique seleciona um intervalo"
+  }
+}

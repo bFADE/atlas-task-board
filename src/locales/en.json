@@ -1,0 +1,210 @@
+{
+  "app": {
+    "title": "Atlas"
+  },
+  "common": {
+    "add": "Add",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "loading": "Loading…",
+    "none": "—",
+    "save": "Save"
+  },
+  "confirm": {
+    "title": "Are you sure?"
+  },
+  "errors": {
+    "category_exists": "A category with this name already exists.",
+    "category_not_found": "This category no longer exists.",
+    "invalid_categories": "Invalid categories.",
+    "invalid_color": "Invalid color.",
+    "invalid_date": "Invalid date.",
+    "invalid_duration": "Durations must be between 1 and 600 minutes.",
+    "invalid_json": "Invalid request.",
+    "invalid_mode": "Invalid timer mode.",
+    "invalid_position": "Invalid position.",
+    "invalid_priority": "Invalid priority.",
+    "invalid_status": "Invalid status.",
+    "invalid_time": "Invalid time.",
+    "name_required": "Task Name is required.",
+    "network": "Can't reach the local server. Is “npm run dev” running?",
+    "not_found": "Not found.",
+    "server_error": "Something went wrong. Please try again.",
+    "task_not_found": "This task no longer exists.",
+    "invalid_columns": "Invalid column order.",
+    "invalid_ids": "Invalid selection."
+  },
+  "status": {
+    "backlog": "📥 Backlog",
+    "todo": "To-do",
+    "in_progress": "🔄 In Progress",
+    "blocked": "🚫 Blocked",
+    "done": "✅ Done"
+  },
+  "priority": {
+    "high": "🔴 High",
+    "medium": "🟡 Medium",
+    "low": "🟢 Low"
+  },
+  "views": {
+    "board": "🗂️ Board",
+    "calendar": "📅 Calendar",
+    "active": "📋 All Active Tasks",
+    "all": "Default view"
+  },
+  "header": {
+    "darkMode": "Switch to dark theme",
+    "language": "Language",
+    "lang_en": "English",
+    "lang_pt": "Português",
+    "lightMode": "Switch to light theme",
+    "views": "Views"
+  },
+  "fields": {
+    "category": "Category",
+    "created": "Created",
+    "dueDate": "Due Date",
+    "dueTime": "Time (optional)",
+    "name": "Task Name",
+    "namePlaceholder": "Task name",
+    "notes": "Notes",
+    "notesPlaceholder": "Add notes…",
+    "priority": "Priority",
+    "status": "Status"
+  },
+  "task": {
+    "clearDate": "Clear due date",
+    "confirmDelete": "Delete the task “{{name}}”? This can't be undone.",
+    "edit": "Edit task",
+    "nameRequired": "Task Name is required.",
+    "new": "New task",
+    "newShort": "New task",
+    "overdue": "Overdue"
+  },
+  "category": {
+    "add": "Add category",
+    "color": "Choose color",
+    "confirmDelete_zero": "Delete the category “{{name}}”?",
+    "confirmDelete_one": "Delete the category “{{name}}”? It will be removed from 1 task.",
+    "confirmDelete_other": "Delete the category “{{name}}”? It will be removed from {{count}} tasks.",
+    "customColor": "Custom color",
+    "delete": "Delete category",
+    "empty": "No categories yet.",
+    "newPlaceholder": "New category…",
+    "rename": "Rename category"
+  },
+  "date": {
+    "invalid": "Use the format MM/DD/YYYY.",
+    "pick": "Open date picker",
+    "placeholder": "MM/DD/YYYY"
+  },
+  "filters": {
+    "clear": "Clear filters",
+    "filterBy": "Filter by {{field}}",
+    "noOptions": "No options",
+    "search": "Search tasks…"
+  },
+  "calendar": {
+    "addOn": "Click to add a task on {{date}}",
+    "month": "Month",
+    "next": "Next",
+    "previous": "Previous",
+    "today": "Today",
+    "undated_one": "1 task without a due date",
+    "undated_other": "{{count}} tasks without a due date",
+    "week": "Week"
+  },
+  "table": {
+    "actions": "Actions",
+    "count_zero": "No tasks",
+    "count_one": "1 task",
+    "count_other": "{{count}} tasks",
+    "empty": "No tasks match.",
+    "sortBy": "Sort by {{field}}"
+  },
+  "settings": {
+    "categoriesTitle": "Categories",
+    "confirmRemoveSample_one": "Remove 1 sample task? Your own tasks are kept.",
+    "confirmRemoveSample_other": "Remove {{count}} sample tasks? Your own tasks are kept.",
+    "durationInvalid": "Durations must be whole numbers between 1 and 600.",
+    "pomodoroTitle": "Pomodoro timer",
+    "removeSample": "Remove sample data",
+    "restoreSample": "Restore sample data",
+    "sampleHelp_zero": "There are no sample tasks right now.",
+    "sampleHelp_one": "There is 1 sample task. Removing it keeps your own tasks and categories.",
+    "sampleHelp_other": "There are {{count}} sample tasks. Removing them keeps your own tasks and categories.",
+    "sampleRemoved_zero": "No sample tasks to remove.",
+    "sampleRemoved_one": "Removed 1 sample task.",
+    "sampleRemoved_other": "Removed {{count}} sample tasks.",
+    "sampleRestored_one": "Added 1 sample task.",
+    "sampleRestored_other": "Added {{count}} sample tasks.",
+    "sampleTitle": "Sample data",
+    "saved": "Settings saved.",
+    "title": "Settings",
+    "boardTitle": "Board",
+    "boardHelp": "Drag a column header on the Board to change the column order.",
+    "resetColumns": "Restore default column order"
+  },
+  "pomodoro": {
+    "autoCycle": "Automatic cycle (4 pomodoros, then a long break)",
+    "autoOff": "Auto cycle: off",
+    "autoOn": "Auto cycle: on",
+    "completed_zero": "pomodoros",
+    "completed_one": "pomodoro",
+    "completed_other": "pomodoros",
+    "customMinutes": "Minutes:",
+    "cycle_one": "{{count}}/4 in this cycle",
+    "cycle_other": "{{count}}/4 in this cycle",
+    "cycleHint": "A long break comes after 4 pomodoros",
+    "focusMinutes": "focus minutes",
+    "linkTask": "Working on",
+    "min": "min",
+    "modes": {
+      "pomodoro": "Pomodoro",
+      "short": "Short Break",
+      "long": "Long Break",
+      "custom": "Custom"
+    },
+    "noSessions": "No sessions completed today yet.",
+    "noTask": "No task",
+    "notify": {
+      "pomodoroTitle": "🍅 Pomodoro complete!",
+      "pomodoroBody": "Nice work. Time for a break.",
+      "shortTitle": "☕ Short break is over",
+      "shortBody": "Back to focus.",
+      "longTitle": "🌿 Long break is over",
+      "longBody": "Ready for a new cycle?",
+      "customTitle": "⏰ Time's up!",
+      "customBody": "Your custom timer has finished."
+    },
+    "pause": "Pause",
+    "reset": "Reset",
+    "resetHint": "Restart the current timer",
+    "resume": "Resume",
+    "settings": "Timer settings",
+    "skip": "Skip",
+    "skipHint": "Skip to the next mode",
+    "start": "Start",
+    "title": "Pomodoro",
+    "today": "Today",
+    "toggle": "Pomodoro timer"
+  },
+  "board": {
+    "dragColumn": "Drag to reorder columns"
+  },
+  "selection": {
+    "all": "Select all",
+    "row": "Select “{{name}}”",
+    "clear": "Clear selection",
+    "delete": "Delete selected",
+    "deleteHint": "Delete selected tasks (Delete)",
+    "count_one": "1 task selected",
+    "count_other": "{{count}} tasks selected",
+    "confirmDelete_one": "Delete 1 task? This can't be undone.",
+    "confirmDelete_other": "Delete {{count}} tasks? This can't be undone.",
+    "deleted_one": "Deleted 1 task.",
+    "deleted_other": "Deleted {{count}} tasks.",
+    "hint": "Tip: {{mod}}A selects all · Delete removes the selected tasks · Shift+click selects a range"
+  }
+}
