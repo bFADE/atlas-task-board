@@ -80,7 +80,8 @@
     "nameRequired": "Task Name is required.",
     "new": "New task",
     "newShort": "New task",
-    "overdue": "Overdue"
+    "overdue": "Overdue",
+    "saveFailed": "Couldn't save your changes. They are still here, so you can try again."
   },
   "category": {
     "add": "Add category",

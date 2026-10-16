@@ -80,7 +80,8 @@
     "nameRequired": "O nome da tarefa é obrigatório.",
     "new": "Nova tarefa",
     "newShort": "Nova tarefa",
-    "overdue": "Atrasada"
+    "overdue": "Atrasada",
+    "saveFailed": "Não foi possível salvar. Suas alterações continuam aqui para você tentar de novo."
   },
   "category": {
     "add": "Adicionar categoria",

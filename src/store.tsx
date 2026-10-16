@@ -24,7 +24,8 @@ interface DataCtx {
   saveBoardColumns: (cols: Status[]) => Promise<void>;
   deleteTasks: (ids: number[]) => Promise<void>;
   createTask: (t: TaskInput) => Promise<Task | null>;
-  updateTask: (id: number, t: TaskInput) => Promise<void>;
+  /** Resolves to false (after rolling back and showing a toast) when the save fails. */
+  updateTask: (id: number, t: TaskInput) => Promise<boolean>;
   deleteTask: (id: number) => Promise<void>;
   createCategory: (name: string, color: string) => Promise<Category | null>;
   updateCategory: (id: number, c: Partial<Category>) => Promise<boolean>;
@@ -108,13 +109,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
       // Optimistic: the UI (drag and drop, inline selects) updates immediately.
       async updateTask(id, input) {
         const prev = tasks.find((x) => x.id === id);
-        if (!prev) return;
+        if (!prev) return false;
         setTasks((ts) => ts.map((x) => (x.id === id ? { ...x, ...input } : x)));
         try {
           replaceTask(await api.updateTask(id, input));
+          return true;
         } catch (err) {
           replaceTask(prev);
           reportError(err);
+          return false;
         }
       },
 

@@ -32,6 +32,7 @@ function TaskForm() {
   const [newCat, setNewCat] = useState('');
   const [nameError, setNameError] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   const toggleCat = (id: number) =>
     setCategoryIds((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
@@ -56,6 +57,7 @@ function TaskForm() {
       return;
     }
     setSaving(true);
+    setSaveFailed(false);
     const payload: TaskInput = {
       name: name.trim(),
       status,
@@ -65,13 +67,11 @@ function TaskForm() {
       categoryIds,
       notes,
     };
-    if (task) {
-      await updateTask(task.id, payload);
-      closeTask();
-    } else if (await createTask(payload)) {
-      closeTask();
-    }
+    // Only close once the server has the data; on failure the form keeps everything typed.
+    const ok = task ? await updateTask(task.id, payload) : !!(await createTask(payload));
     setSaving(false);
+    if (ok) closeTask();
+    else setSaveFailed(true);
   };
 
   const remove = async () => {
@@ -124,6 +124,11 @@ function TaskForm() {
             }}
           />
           {nameError && <p className="text-xs text-danger">{t('task.nameRequired')}</p>}
+          {saveFailed && (
+            <p role="alert" className="mt-2 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
+              {t('task.saveFailed')}
+            </p>
+          )}
         </div>
 
         <div className="grid grid-cols-[7.5rem_1fr] items-center gap-x-3 gap-y-3 text-sm">
