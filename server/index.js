@@ -28,7 +28,15 @@ app.use(express.json());
 
 const DEFAULT_POMODORO = { pomodoro: 25, short: 5, long: 15, custom: 10, autoCycle: false };
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_RE = /^\d{2}:\d{2}$/;
+const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+/** YYYY-MM-DD that exists on the calendar (rejects 2026-02-30, 2026-13-45, …). */
+function isRealDate(s) {
+  if (typeof s !== 'string' || !DATE_RE.test(s)) return false;
+  const [y, m, d] = s.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
+}
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
 class HttpError extends Error {
@@ -79,7 +87,8 @@ function getTask(id) {
 }
 
 /** Validates the writable fields of a task body and maps them to DB columns. */
-function taskFields(body, { partial }) {
+/** `current` is the stored row on PATCH, so a time is never kept on a task without a date. */
+function taskFields(body, { partial, current = null }) {
   const out = {};
   if ('name' in body || !partial) {
     const name = typeof body.name === 'string' ? body.name.trim() : '';
@@ -95,14 +104,18 @@ function taskFields(body, { partial }) {
     out.priority = body.priority;
   }
   if ('dueDate' in body) {
-    if (body.dueDate !== null && !DATE_RE.test(body.dueDate)) throw new HttpError(400, 'invalid_date');
+    if (body.dueDate !== null && !isRealDate(body.dueDate)) throw new HttpError(400, 'invalid_date');
     out.due_date = body.dueDate;
-    if (body.dueDate === null) out.due_time = null;
   }
-  if ('dueTime' in body && out.due_time !== null) {
-    if (body.dueTime !== null && !TIME_RE.test(body.dueTime)) throw new HttpError(400, 'invalid_time');
+  if ('dueTime' in body) {
+    if (body.dueTime !== null && (typeof body.dueTime !== 'string' || !TIME_RE.test(body.dueTime))) {
+      throw new HttpError(400, 'invalid_time');
+    }
     out.due_time = body.dueTime;
   }
+  // A time only makes sense with a date: drop it when the task ends up without one.
+  const dateAfter = 'due_date' in out ? out.due_date : current?.due_date ?? null;
+  if (dateAfter === null && ('due_time' in out || 'due_date' in out)) out.due_time = null;
   if ('notes' in body) out.notes = String(body.notes ?? '');
   if ('position' in body) {
     if (typeof body.position !== 'number' || !Number.isFinite(body.position)) throw new HttpError(400, 'invalid_position');
@@ -140,7 +153,8 @@ app.post('/api/tasks', wrap((req, res) => {
 app.patch('/api/tasks/:id', wrap((req) => {
   const id = Number(req.params.id);
   getTask(id); // 404 if missing
-  const fields = taskFields(req.body, { partial: true });
+  const current = db.prepare('SELECT due_date FROM tasks WHERE id = ?').get(id);
+  const fields = taskFields(req.body, { partial: true, current });
   db.transaction(() => {
     const cols = Object.keys(fields);
     if (cols.length) {
