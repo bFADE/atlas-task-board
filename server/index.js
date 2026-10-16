@@ -51,6 +51,8 @@ const wrap = (fn) => (req, res, next) => {
   try {
     const out = fn(req, res);
     if (out !== undefined) res.json(out);
+    // A handler must either return a body or respond itself; never leave the request hanging.
+    else if (!res.headersSent) throw new Error(`No response from ${req.method} ${req.path}`);
   } catch (err) {
     next(err);
   }
@@ -216,14 +218,15 @@ app.post('/api/categories', wrap((req, res) => {
 
 app.patch('/api/categories/:id', wrap((req) => {
   const id = Number(req.params.id);
+  const getCategory = () => db.prepare('SELECT id, name, color FROM categories WHERE id = ?').get(id);
+  if (!getCategory()) throw new HttpError(404, 'category_not_found');
   const f = categoryFields(req.body, { partial: true });
   const cols = Object.keys(f);
   if (cols.length) {
-    const { changes } = uniqueGuard(() =>
+    uniqueGuard(() =>
       db.prepare(`UPDATE categories SET ${cols.map((c) => `${c} = @${c}`).join(', ')} WHERE id = @id`).run({ ...f, id }));
-    if (!changes) throw new HttpError(404, 'category_not_found');
   }
-  return db.prepare('SELECT id, name, color FROM categories WHERE id = ?').get(id);
+  return getCategory();
 }));
 
 app.delete('/api/categories/:id', wrap((req, res) => {
