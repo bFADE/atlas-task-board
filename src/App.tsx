@@ -10,7 +10,7 @@ import { CalendarView } from './views/CalendarView';
 import { TableView } from './views/TableView';
 import { PomodoroProvider } from './pomodoro/PomodoroProvider';
 import { PomodoroWidget } from './pomodoro/PomodoroPanel';
-import { DataProvider, UiProvider, useData } from './store';
+import { ClockProvider, DataProvider, UiProvider, useData } from './store';
 import { EMPTY_FILTERS, type Filters } from './lib/types';
 import { load, save } from './lib/storage';
 
@@ -21,7 +21,9 @@ export default function App() {
     <DataProvider>
       <UiProvider>
         <PomodoroProvider>
-          <Shell />
+          <ClockProvider>
+            <Shell />
+          </ClockProvider>
         </PomodoroProvider>
       </UiProvider>
     </DataProvider>

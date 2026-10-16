@@ -19,12 +19,11 @@ import {
   isOverdue,
   monthYearLabel,
   toDateStr,
-  todayStr,
   weekStartOf,
   weekdayNames,
 } from '../lib/dates';
 import { load, save } from '../lib/storage';
-import { useData, useLang, useUi } from '../store';
+import { useData, useLang, useNow, useUi } from '../store';
 
 type Mode = 'month' | 'week';
 const MONTH_CELL_LINES = 3;
@@ -39,7 +38,7 @@ export const CalendarView = memo(function CalendarView({ tasks }: { tasks: Task[
   const [cursor, setCursor] = useState(() => new Date());
   const [dragging, setDragging] = useState<Task | null>(null);
   const weekStartsOn = weekStartOf(lang);
-  const today = todayStr();
+  const today = toDateStr(useNow());
 
   const setModePersist = (m: Mode) => {
     setMode(m);
@@ -238,7 +237,7 @@ const Item = memo(function Item({ task, overlay }: { task: Task; overlay?: boole
   const { t } = useTranslation();
   const lang = useLang();
   const { openTask } = useUi();
-  const overdue = isOverdue(task);
+  const overdue = isOverdue(task, useNow());
   const priorityColor = task.priority ? PRIORITY_COLORS[task.priority] : 'transparent';
 
   return (

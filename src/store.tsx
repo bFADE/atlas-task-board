@@ -348,6 +348,37 @@ export function useUi() {
   return ctx;
 }
 
+// ---------- Clock ----------
+
+const ClockContext = createContext<number>(Date.now());
+
+/**
+ * Re-renders consumers at every minute boundary (and when the tab becomes visible again), so
+ * "today" and overdue highlighting stay correct when the app is left open, e.g. overnight.
+ */
+export function ClockProvider({ children }: { children: ReactNode }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      timer = setTimeout(() => {
+        setNow(Date.now());
+        schedule();
+      }, 60_000 - (Date.now() % 60_000) + 50);
+    };
+    schedule();
+    const onVisible = () => document.visibilityState === 'visible' && setNow(Date.now());
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+  return <ClockContext.Provider value={now}>{children}</ClockContext.Provider>;
+}
+
+export const useNow = () => new Date(useContext(ClockContext));
+
 export function useLang(): Lang {
   const { i18n } = useTranslation();
   return i18n.language === 'pt' ? 'pt' : 'en';

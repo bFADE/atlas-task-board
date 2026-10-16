@@ -3,7 +3,7 @@ import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useTranslation } from 'react-i18next';
 import { PRIORITIES, PRIORITY_COLORS, STATUSES, STATUS_COLORS, type Priority, type Status, type Task, type TaskInput } from '../lib/types';
 import { formatDue, isOverdue, type Lang } from '../lib/dates';
-import { useData, useLang, useUi } from '../store';
+import { useData, useLang, useNow, useUi } from '../store';
 
 type Key = 'status' | 'priority' | 'name' | 'notes' | 'dueDate';
 type Sort = { key: Key; dir: 'asc' | 'desc' };
@@ -270,6 +270,7 @@ const TableRow = memo(function TableRow({
   onOpen: openTask,
 }: RowProps) {
   const { t } = useTranslation();
+  const now = useNow();
   const cell = (x: Task, key: Key) => {
     switch (key) {
       case 'status':
@@ -318,7 +319,7 @@ const TableRow = memo(function TableRow({
           </td>
         );
       case 'dueDate': {
-        const overdue = isOverdue(x);
+        const overdue = isOverdue(x, now);
         return (
           <td key={key} className={`whitespace-nowrap px-3 py-1.5 ${overdue ? 'font-semibold text-danger' : ''}`}>
             {overdue && '⚠️ '}

@@ -28,7 +28,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { STATUSES, STATUS_COLORS, type Status, type Task } from '../lib/types';
 import { formatDue, isOverdue } from '../lib/dates';
-import { useData, useLang, useUi } from '../store';
+import { useData, useLang, useNow, useUi } from '../store';
 import { CategoryTags, PriorityBadge } from '../components/Badges';
 
 type Columns = Record<Status, number[]>;
@@ -296,7 +296,7 @@ const Card = memo(function Card({ task, overlay }: { task: Task; overlay?: boole
   const lang = useLang();
   const { categoryMap } = useData();
   const { openTask } = useUi();
-  const overdue = isOverdue(task);
+  const overdue = isOverdue(task, useNow());
 
   return (
     <article
