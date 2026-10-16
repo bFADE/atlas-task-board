@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DndContext,
@@ -77,7 +77,7 @@ const collision: CollisionDetection = (args) => {
   return closestCenter({ ...args, droppableContainers: cards });
 };
 
-export function BoardView({ tasks, statuses }: { tasks: Task[]; statuses: Status[] }) {
+export const BoardView = memo(function BoardView({ tasks, statuses }: { tasks: Task[]; statuses: Status[] }) {
   const { t } = useTranslation();
   const { updateTask, boardColumns, saveBoardColumns, notify } = useData();
   const taskMap = useMemo(() => new Map(tasks.map((x) => [x.id, x])), [tasks]);
@@ -196,9 +196,9 @@ export function BoardView({ tasks, statuses }: { tasks: Task[]; statuses: Status
       </DragOverlay>
     </DndContext>
   );
-}
+});
 
-function Column({ status, ids, taskMap }: { status: Status; ids: number[]; taskMap: Map<number, Task> }) {
+const Column = memo(function Column({ status, ids, taskMap }: { status: Status; ids: number[]; taskMap: Map<number, Task> }) {
   const { t } = useTranslation();
   const { openTask } = useUi();
   const { setNodeRef, isOver } = useDroppable({ id: colId(status) });
@@ -236,7 +236,7 @@ function Column({ status, ids, taskMap }: { status: Status; ids: number[]; taskM
       </button>
     </section>
   );
-}
+});
 
 function ColumnHeader({
   status,
@@ -276,7 +276,7 @@ function ColumnHeader({
   );
 }
 
-function SortableCard({ task }: { task: Task }) {
+const SortableCard = memo(function SortableCard({ task }: { task: Task }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: task.id });
   return (
     <div
@@ -289,9 +289,9 @@ function SortableCard({ task }: { task: Task }) {
       <Card task={task} />
     </div>
   );
-}
+});
 
-function Card({ task, overlay }: { task: Task; overlay?: boolean }) {
+const Card = memo(function Card({ task, overlay }: { task: Task; overlay?: boolean }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { categoryMap } = useData();
@@ -318,4 +318,4 @@ function Card({ task, overlay }: { task: Task; overlay?: boolean }) {
       <CategoryTags ids={task.categoryIds} map={categoryMap} />
     </article>
   );
-}
+});

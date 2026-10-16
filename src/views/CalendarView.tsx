@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   DndContext,
@@ -31,7 +31,7 @@ const MONTH_CELL_LINES = 3;
 
 const STATUS_ICON = { backlog: '📥', todo: '○', in_progress: '🔄', blocked: '🚫', done: '✅' } as const;
 
-export function CalendarView({ tasks }: { tasks: Task[] }) {
+export const CalendarView = memo(function CalendarView({ tasks }: { tasks: Task[] }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { updateTask } = useData();
@@ -157,7 +157,7 @@ export function CalendarView({ tasks }: { tasks: Task[] }) {
       </DndContext>
     </div>
   );
-}
+});
 
 function DayCell({
   date,
@@ -225,16 +225,16 @@ function DayCell({
   );
 }
 
-function DraggableItem({ task }: { task: Task }) {
+const DraggableItem = memo(function DraggableItem({ task }: { task: Task }) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: task.id });
   return (
     <div ref={setNodeRef} {...attributes} {...listeners} className={isDragging ? 'opacity-30' : ''}>
       <Item task={task} />
     </div>
   );
-}
+});
 
-function Item({ task, overlay }: { task: Task; overlay?: boolean }) {
+const Item = memo(function Item({ task, overlay }: { task: Task; overlay?: boolean }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { openTask } = useUi();
@@ -265,4 +265,4 @@ function Item({ task, overlay }: { task: Task; overlay?: boolean }) {
       <span className="truncate font-medium">{task.name}</span>
     </div>
   );
-}
+});

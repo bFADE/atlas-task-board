@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useWindowVirtualizer } from '@tanstack/react-virtual';
 import { useTranslation } from 'react-i18next';
-import { PRIORITIES, PRIORITY_COLORS, STATUSES, STATUS_COLORS, type Priority, type Status, type Task } from '../lib/types';
-import { formatDue, isOverdue } from '../lib/dates';
+import { PRIORITIES, PRIORITY_COLORS, STATUSES, STATUS_COLORS, type Priority, type Status, type Task, type TaskInput } from '../lib/types';
+import { formatDue, isOverdue, type Lang } from '../lib/dates';
 import { useData, useLang, useUi } from '../store';
 
 type Key = 'status' | 'priority' | 'name' | 'notes' | 'dueDate';
 type Sort = { key: Key; dir: 'asc' | 'desc' };
 const COLUMNS: Key[] = ['status', 'priority', 'name', 'notes', 'dueDate'];
+const VIRTUALIZE_ABOVE = 200;
+const ROW_HEIGHT = 41;
 
 function compare(a: Task, b: Task, key: Key): number | null {
   switch (key) {
@@ -30,7 +33,7 @@ function compare(a: Task, b: Task, key: Key): number | null {
  * `mode="active"`: tasks with Status ≠ Done, Due Date ascending.
  * `mode="all"`: every task, Task Name descending.
  */
-export function TableView({ tasks, mode }: { tasks: Task[]; mode: 'active' | 'all' }) {
+export const TableView = memo(function TableView({ tasks, mode }: { tasks: Task[]; mode: 'active' | 'all' }) {
   const { t } = useTranslation();
   const lang = useLang();
   const { updateTask, deleteTask, deleteTasks } = useData();
@@ -61,11 +64,15 @@ export function TableView({ tasks, mode }: { tasks: Task[]; mode: 'active' | 'al
 
   const allSelected = rows.length > 0 && rows.every((x) => selected.has(x.id));
 
-  const toggleRow = (id: number, shift: boolean) => {
+  const rowsRef = useRef(rows);
+  rowsRef.current = rows;
+
+  const toggleRow = useCallback((id: number, shift: boolean) => {
+    const list = rowsRef.current;
     // Shift+click selects/deselects the whole range since the last clicked row.
-    const from = shift && lastClicked.current != null ? rows.findIndex((x) => x.id === lastClicked.current) : -1;
-    const to = rows.findIndex((x) => x.id === id);
-    const range = from >= 0 ? rows.slice(Math.min(from, to), Math.max(from, to) + 1) : [rows[to]];
+    const from = shift && lastClicked.current != null ? list.findIndex((x) => x.id === lastClicked.current) : -1;
+    const to = list.findIndex((x) => x.id === id);
+    const range = from >= 0 ? list.slice(Math.min(from, to), Math.max(from, to) + 1) : [list[to]];
     lastClicked.current = id;
     setSelected((sel) => {
       const next = new Set(sel);
@@ -73,7 +80,7 @@ export function TableView({ tasks, mode }: { tasks: Task[]; mode: 'active' | 'al
       for (const x of range) (on ? next.add(x.id) : next.delete(x.id));
       return next;
     });
-  };
+  }, []);
 
   const deleteSelected = useCallback(async () => {
     const ids = rows.filter((x) => selected.has(x.id)).map((x) => x.id);
@@ -112,10 +119,157 @@ export function TableView({ tasks, mode }: { tasks: Task[]; mode: 'active' | 'al
   const toggleSort = (key: Key) =>
     setSort((s) => (s.key === key ? { key, dir: s.dir === 'asc' ? 'desc' : 'asc' } : { key, dir: 'asc' }));
 
-  const remove = async (task: Task) => {
-    if (await confirm(t('task.confirmDelete', { name: task.name }))) deleteTask(task.id);
-  };
+  const remove = useCallback(
+    async (task: Task) => {
+      if (await confirm(t('task.confirmDelete', { name: task.name }))) deleteTask(task.id);
+    },
+    [confirm, deleteTask, t],
+  );
 
+  // Large lists only render the rows near the viewport (page scroll), keeping view switches/sorts fast.
+  const virtual = rows.length > VIRTUALIZE_ABOVE;
+  const tbodyRef = useRef<HTMLTableSectionElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+  useLayoutEffect(() => {
+    if (tbodyRef.current) setScrollMargin(tbodyRef.current.getBoundingClientRect().top + window.scrollY);
+  }, [virtual, selectable]);
+  const virtualizer = useWindowVirtualizer({
+    count: rows.length,
+    estimateSize: () => ROW_HEIGHT,
+    overscan: 12,
+    scrollMargin,
+    enabled: virtual,
+  });
+  const items = virtual ? virtualizer.getVirtualItems() : null;
+  const padTop = items?.length ? items[0].start - scrollMargin : 0;
+  const padBottom = items?.length ? virtualizer.getTotalSize() - (items[items.length - 1].end - scrollMargin) : 0;
+  const shown = items ? items.map((v) => rows[v.index]) : rows;
+  const colSpan = COLUMNS.length + (selectable ? 2 : 1);
+
+  const mod = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+';
+
+  return (
+    <div className="px-4 pb-6 sm:px-6">
+      {selectable && (
+        <div className="mb-2 flex min-h-[36px] flex-wrap items-center gap-2 text-sm">
+          <button
+            className="btn btn-ghost-danger border-line"
+            disabled={!selected.size}
+            onClick={deleteSelected}
+            title={t('selection.deleteHint')}
+          >
+            🗑 {t('selection.delete')}
+            {selected.size > 0 && ` (${selected.size})`}
+          </button>
+          {selected.size > 0 ? (
+            <>
+              <span className="text-muted">{t('selection.count', { count: selected.size })}</span>
+              <button className="btn-text" onClick={() => setSelected(new Set())}>
+                {t('selection.clear')}
+              </button>
+            </>
+          ) : (
+            <span className="text-xs text-muted">{t('selection.hint', { mod })}</span>
+          )}
+        </div>
+      )}
+      <div className="overflow-x-auto rounded-lg border border-line">
+        <table className="w-full min-w-[820px] border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-line bg-panel text-left text-xs text-muted">
+              {selectable && (
+                <th className="w-9 px-3">
+                  <Checkbox
+                    checked={allSelected}
+                    indeterminate={selected.size > 0 && !allSelected}
+                    label={t('selection.all')}
+                    onChange={() => setSelected(allSelected ? new Set() : new Set(rows.map((x) => x.id)))}
+                  />
+                </th>
+              )}
+              {COLUMNS.map((k) => (
+                <th key={k} className="p-0 font-medium" aria-sort={sort.key === k ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
+                  <button
+                    className="flex w-full items-center gap-1 px-3 py-2 hover:bg-hover hover:text-fg"
+                    onClick={() => toggleSort(k)}
+                    title={t('table.sortBy', { field: t(`fields.${k}`) })}
+                  >
+                    {t(`fields.${k}`)}
+                    {sort.key === k && <span>{sort.dir === 'asc' ? '↑' : '↓'}</span>}
+                  </button>
+                </th>
+              ))}
+              <th className="w-10" aria-label={t('table.actions')} />
+            </tr>
+          </thead>
+          <tbody ref={tbodyRef}>
+            {padTop > 0 && (
+              <tr aria-hidden="true" style={{ height: padTop }}>
+                <td colSpan={colSpan} />
+              </tr>
+            )}
+            {shown.map((x, i) => (
+              <TableRow
+                key={x.id}
+                task={x}
+                lang={lang}
+                selectable={selectable}
+                isSel={selected.has(x.id)}
+                index={items ? items[i].index : i}
+                measureRef={virtual ? virtualizer.measureElement : undefined}
+                onToggle={toggleRow}
+                onRemove={remove}
+                onUpdate={updateTask}
+                onOpen={openTask}
+              />
+            ))}
+            {padBottom > 0 && (
+              <tr aria-hidden="true" style={{ height: padBottom }}>
+                <td colSpan={colSpan} />
+              </tr>
+            )}
+            {!rows.length && (
+              <tr>
+                <td colSpan={colSpan} className="px-3 py-8 text-center text-muted">
+                  {t('table.empty')}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+      <p className="mt-2 text-xs text-muted">{t('table.count', { count: rows.length })}</p>
+    </div>
+  );
+});
+
+interface RowProps {
+  task: Task;
+  lang: Lang;
+  selectable: boolean;
+  isSel: boolean;
+  index: number;
+  measureRef?: (el: Element | null) => void;
+  onToggle: (id: number, shift: boolean) => void;
+  onRemove: (task: Task) => void;
+  onUpdate: (id: number, input: TaskInput) => unknown;
+  onOpen: (task: Task) => void;
+}
+
+/** Memoized: re-renders only when its task, selection or language changes. */
+const TableRow = memo(function TableRow({
+  task: x,
+  lang,
+  selectable,
+  isSel,
+  index,
+  measureRef,
+  onToggle,
+  onRemove,
+  onUpdate: updateTask,
+  onOpen: openTask,
+}: RowProps) {
+  const { t } = useTranslation();
   const cell = (x: Task, key: Key) => {
     switch (key) {
       case 'status':
@@ -175,108 +329,32 @@ export function TableView({ tasks, mode }: { tasks: Task[]; mode: 'active' | 'al
     }
   };
 
-  const mod = /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+';
-
   return (
-    <div className="px-4 pb-6 sm:px-6">
+    <tr
+      ref={measureRef}
+      data-index={index}
+      aria-selected={selectable ? isSel : undefined}
+      className={`group border-b border-line last:border-b-0 ${isSel ? 'bg-accent/10' : 'hover:bg-hover/50'}`}
+    >
       {selectable && (
-        <div className="mb-2 flex min-h-[36px] flex-wrap items-center gap-2 text-sm">
-          <button
-            className="btn btn-ghost-danger border-line"
-            disabled={!selected.size}
-            onClick={deleteSelected}
-            title={t('selection.deleteHint')}
-          >
-            🗑 {t('selection.delete')}
-            {selected.size > 0 && ` (${selected.size})`}
-          </button>
-          {selected.size > 0 ? (
-            <>
-              <span className="text-muted">{t('selection.count', { count: selected.size })}</span>
-              <button className="btn-text" onClick={() => setSelected(new Set())}>
-                {t('selection.clear')}
-              </button>
-            </>
-          ) : (
-            <span className="text-xs text-muted">{t('selection.hint', { mod })}</span>
-          )}
-        </div>
+        <td className="px-3 py-1.5">
+          <Checkbox checked={isSel} label={t('selection.row', { name: x.name })} onChange={(shift) => onToggle(x.id, shift)} />
+        </td>
       )}
-      <div className="overflow-x-auto rounded-lg border border-line">
-        <table className="w-full min-w-[820px] border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-line bg-panel text-left text-xs text-muted">
-              {selectable && (
-                <th className="w-9 px-3">
-                  <Checkbox
-                    checked={allSelected}
-                    indeterminate={selected.size > 0 && !allSelected}
-                    label={t('selection.all')}
-                    onChange={() => setSelected(allSelected ? new Set() : new Set(rows.map((x) => x.id)))}
-                  />
-                </th>
-              )}
-              {COLUMNS.map((k) => (
-                <th key={k} className="p-0 font-medium" aria-sort={sort.key === k ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}>
-                  <button
-                    className="flex w-full items-center gap-1 px-3 py-2 hover:bg-hover hover:text-fg"
-                    onClick={() => toggleSort(k)}
-                    title={t('table.sortBy', { field: t(`fields.${k}`) })}
-                  >
-                    {t(`fields.${k}`)}
-                    {sort.key === k && <span>{sort.dir === 'asc' ? '↑' : '↓'}</span>}
-                  </button>
-                </th>
-              ))}
-              <th className="w-10" aria-label={t('table.actions')} />
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((x) => {
-              const isSel = selected.has(x.id);
-              return (
-                <tr
-                  key={x.id}
-                  aria-selected={selectable ? isSel : undefined}
-                  className={`group border-b border-line last:border-b-0 ${isSel ? 'bg-accent/10' : 'hover:bg-hover/50'}`}
-                >
-                  {selectable && (
-                    <td className="px-3 py-1.5">
-                      <Checkbox
-                        checked={isSel}
-                        label={t('selection.row', { name: x.name })}
-                        onChange={(shift) => toggleRow(x.id, shift)}
-                      />
-                    </td>
-                  )}
-                  {COLUMNS.map((k) => cell(x, k))}
-                  <td className="px-2 py-1.5 text-right">
-                    <button
-                      className="btn-icon opacity-0 focus:opacity-100 group-hover:opacity-100"
-                      onClick={() => remove(x)}
-                      title={t('common.delete')}
-                      aria-label={t('common.delete')}
-                    >
-                      🗑
-                    </button>
-                  </td>
-                </tr>
-              );
-            })}
-            {!rows.length && (
-              <tr>
-                <td colSpan={COLUMNS.length + (selectable ? 2 : 1)} className="px-3 py-8 text-center text-muted">
-                  {t('table.empty')}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-      <p className="mt-2 text-xs text-muted">{t('table.count', { count: rows.length })}</p>
-    </div>
+      {COLUMNS.map((k) => cell(x, k))}
+      <td className="px-2 py-1.5 text-right">
+        <button
+          className="btn-icon opacity-0 focus:opacity-100 group-hover:opacity-100"
+          onClick={() => onRemove(x)}
+          title={t('common.delete')}
+          aria-label={t('common.delete')}
+        >
+          🗑
+        </button>
+      </td>
+    </tr>
   );
-}
+});
 
 function Checkbox({
   checked,

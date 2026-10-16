@@ -93,15 +93,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
     reload();
   }, [reload]);
 
-  const value = useMemo<DataCtx>(() => {
+  // Actions read the latest data through refs so their identity doesn't change on every task edit;
+  // memoized cards/rows that receive them don't re-render needlessly.
+  const tasksRef = useRef(tasks);
+  tasksRef.current = tasks;
+  const boardColumnsRef = useRef(boardColumns);
+  boardColumnsRef.current = boardColumns;
+  const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
+
+  type Actions = Omit<DataCtx, 'loading' | 'tasks' | 'categories' | 'categoryMap' | 'pomodoroSettings' | 'boardColumns'>;
+  const actions = useMemo<Actions>(() => {
     const replaceTask = (task: Task) => setTasks((ts) => ts.map((x) => (x.id === task.id ? task : x)));
     return {
-      loading,
-      tasks,
-      categories,
-      categoryMap: new Map(categories.map((c) => [c.id, c])),
-      pomodoroSettings,
-      boardColumns,
       notify,
       reportError,
 
@@ -118,7 +121,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       // Optimistic: the UI (drag and drop, inline selects) updates immediately.
       async updateTask(id, input) {
-        const prev = tasks.find((x) => x.id === id);
+        const prev = tasksRef.current.find((x) => x.id === id);
         if (!prev) return false;
         setTasks((ts) => ts.map((x) => (x.id === id ? { ...x, ...input } : x)));
         try {
@@ -153,7 +156,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       // Optimistic, like task moves on the board.
       async saveBoardColumns(cols) {
-        const prev = boardColumns;
+        const prev = boardColumnsRef.current;
         setBoardColumns(cols);
         try {
           setBoardColumns((await api.saveSettings({ boardColumns: cols })).boardColumns);
@@ -226,7 +229,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       },
     };
-  }, [loading, tasks, categories, pomodoroSettings, boardColumns, notify, reportError, reload, t]);
+  }, [notify, reportError, reload, t]);
+
+  const value = useMemo<DataCtx>(
+    () => ({ loading, tasks, categories, categoryMap, pomodoroSettings, boardColumns, ...actions }),
+    [loading, tasks, categories, categoryMap, pomodoroSettings, boardColumns, actions],
+  );
 
   return (
     <DataContext.Provider value={value}>
@@ -295,27 +303,27 @@ export function UiProvider({ children }: { children: ReactNode }) {
   const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Stable callbacks: memoized cards/rows receive them as props.
+  const openTask = useCallback((task: Task | null, defaults?: TaskInput) => setTaskModal({ task, defaults }), []);
+  const closeTask = useCallback(() => setTaskModal(null), []);
+  const confirm = useCallback(
+    (message: string, confirmLabel?: string) =>
+      new Promise<boolean>((resolve) =>
+        setConfirmState({
+          message,
+          confirmLabel,
+          resolve: (ok) => {
+            setConfirmState(null);
+            resolve(ok);
+          },
+        }),
+      ),
+    [],
+  );
+
   const value = useMemo<UiCtx>(
-    () => ({
-      taskModal,
-      openTask: (task, defaults) => setTaskModal({ task, defaults }),
-      closeTask: () => setTaskModal(null),
-      confirmState,
-      confirm: (message, confirmLabel) =>
-        new Promise<boolean>((resolve) =>
-          setConfirmState({
-            message,
-            confirmLabel,
-            resolve: (ok) => {
-              setConfirmState(null);
-              resolve(ok);
-            },
-          }),
-        ),
-      settingsOpen,
-      setSettingsOpen,
-    }),
-    [taskModal, confirmState, settingsOpen],
+    () => ({ taskModal, openTask, closeTask, confirmState, confirm, settingsOpen, setSettingsOpen }),
+    [taskModal, openTask, closeTask, confirmState, confirm, settingsOpen],
   );
 
   return <UiContext.Provider value={value}>{children}</UiContext.Provider>;

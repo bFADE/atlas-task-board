@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Header, VIEWS, type View } from './components/Header';
 import { FilterBar, applyFilters } from './components/FilterBar';
@@ -51,7 +51,13 @@ function Shell() {
     }
   }, [theme]);
 
-  const filtered = useMemo(() => applyFilters(tasks, filters), [tasks, filters]);
+  // Typing stays responsive: the (expensive) filtered views update with a deferred search value.
+  const search = useDeferredValue(filters.search);
+  const { categories, priorities, statuses } = filters;
+  const filtered = useMemo(
+    () => applyFilters(tasks, { search, categories, priorities, statuses }),
+    [tasks, search, categories, priorities, statuses],
+  );
 
   return (
     <div className="min-h-screen bg-surface text-fg">
