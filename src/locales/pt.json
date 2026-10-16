@@ -30,6 +30,7 @@
     "invalid_priority": "Prioridade inválida.",
     "invalid_session_key": "Sessão inválida.",
     "invalid_status": "Status inválido.",
+    "invalid_task": "Tarefa inválida.",
     "invalid_time": "Horário inválido.",
     "name_required": "O nome da tarefa é obrigatório.",
     "network": "Não foi possível falar com o servidor local. O “npm run dev” está rodando?",

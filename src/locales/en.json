@@ -30,6 +30,7 @@
     "invalid_priority": "Invalid priority.",
     "invalid_session_key": "Invalid session.",
     "invalid_status": "Invalid status.",
+    "invalid_task": "Invalid task.",
     "invalid_time": "Invalid time.",
     "name_required": "Task Name is required.",
     "network": "Can't reach the local server. Is “npm run dev” running?",

@@ -278,9 +278,11 @@ app.post('/api/sessions', wrap((req, res) => {
     throw new HttpError(400, 'invalid_session_key');
   }
   if (!['pomodoro', 'custom'].includes(mode)) throw new HttpError(400, 'invalid_mode');
-  if (!DATE_RE.test(localDate ?? '')) throw new HttpError(400, 'invalid_date');
-  const dur = Math.round(Number(durationSec));
-  if (!Number.isFinite(dur) || dur <= 0) throw new HttpError(400, 'invalid_duration');
+  if (!isRealDate(localDate)) throw new HttpError(400, 'invalid_date');
+  // 1 s … 10 h (the longest timer the UI allows is 600 min).
+  if (!Number.isInteger(durationSec) || durationSec < 1 || durationSec > 36_000) throw new HttpError(400, 'invalid_duration');
+  const dur = durationSec;
+  if (taskId !== null && !(Number.isInteger(taskId) && taskId > 0)) throw new HttpError(400, 'invalid_task');
   const exists = taskId != null && db.prepare('SELECT 1 FROM tasks WHERE id = ?').get(taskId);
   // Same sessionKey twice (e.g. two tabs) → stored once.
   const { changes } = db
@@ -293,7 +295,7 @@ app.post('/api/sessions', wrap((req, res) => {
 
 app.get('/api/sessions/summary', wrap((req) => {
   const date = String(req.query.date ?? '');
-  if (!DATE_RE.test(date)) throw new HttpError(400, 'invalid_date');
+  if (!isRealDate(date)) throw new HttpError(400, 'invalid_date');
   const sessions = db.prepare(`
     SELECT s.id, s.mode, s.duration_sec AS durationSec, s.completed_at AS completedAt, s.task_id AS taskId, t.name AS taskName
     FROM pomodoro_sessions s LEFT JOIN tasks t ON t.id = s.task_id
