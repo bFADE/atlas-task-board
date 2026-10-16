@@ -214,5 +214,10 @@
     "deleted_one": "Deleted 1 task.",
     "deleted_other": "Deleted {{count}} tasks.",
     "hint": "Tip: {{mod}}A selects all · Delete removes the selected tasks · Shift+click selects a range"
+  },
+  "serverDown": {
+    "title": "Can't reach the Atlas server",
+    "body": "Your tasks are safe on this computer, but the local server isn't responding. Make sure “npm run dev” (or “npm start”) is running in the terminal, then try again.",
+    "retry": "Retry"
   }
 }

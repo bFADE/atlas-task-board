@@ -214,5 +214,10 @@
     "deleted_one": "1 tarefa excluída.",
     "deleted_other": "{{count}} tarefas excluídas.",
     "hint": "Dica: {{mod}}A seleciona tudo · Delete exclui as selecionadas · Shift+clique seleciona um intervalo"
+  },
+  "serverDown": {
+    "title": "Não foi possível conectar ao servidor do Atlas",
+    "body": "Suas tarefas estão seguras neste computador, mas o servidor local não está respondendo. Verifique se o “npm run dev” (ou “npm start”) está rodando no terminal e tente de novo.",
+    "retry": "Tentar de novo"
   }
 }

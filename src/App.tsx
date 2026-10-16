@@ -30,7 +30,7 @@ export default function App() {
 
 function Shell() {
   const { t } = useTranslation();
-  const { tasks, loading } = useData();
+  const { tasks, loading, loadError, retryLoad } = useData();
   const [view, setView] = useState<View>(() => {
     const v = load<View>('view', 'board');
     return VIEWS.includes(v) ? v : 'board';
@@ -71,6 +71,15 @@ function Shell() {
       <main className="mx-auto max-w-[1600px] pb-20">
         {loading ? (
           <p className="px-6 py-10 text-center text-muted">{t('common.loading')}</p>
+        ) : loadError ? (
+          <div role="alert" className="mx-auto mt-12 max-w-md rounded-lg border border-line bg-panel p-6 text-center">
+            <p className="text-3xl">🔌</p>
+            <h2 className="mt-2 font-semibold">{t('serverDown.title')}</h2>
+            <p className="mt-2 text-sm text-muted">{t('serverDown.body')}</p>
+            <button className="btn btn-primary mt-4" onClick={retryLoad}>
+              {t('serverDown.retry')}
+            </button>
+          </div>
         ) : view === 'board' ? (
           <BoardView tasks={filtered} statuses={filters.statuses} />
         ) : view === 'calendar' ? (

@@ -22,6 +22,9 @@ interface Toast {
 
 interface DataCtx {
   loading: boolean;
+  /** The first load failed (API not reachable); the app shows a retry screen instead of empty views. */
+  loadError: boolean;
+  retryLoad: () => void;
   tasks: Task[];
   categories: Category[];
   categoryMap: Map<number, Category>;
@@ -50,6 +53,8 @@ const DataContext = createContext<DataCtx | null>(null);
 export function DataProvider({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const loadedOnce = useRef(false);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [pomodoroSettings, setPomodoroSettings] = useState<PomodoroSettings>(DEFAULT_POMODORO);
@@ -82,8 +87,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setCategories(cs);
       setPomodoroSettings(s.pomodoro);
       setBoardColumns(s.boardColumns);
+      loadedOnce.current = true;
+      setLoadError(false);
     } catch (err) {
-      reportError(err);
+      if (loadedOnce.current) reportError(err);
+      else setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -101,7 +109,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
   boardColumnsRef.current = boardColumns;
   const categoryMap = useMemo(() => new Map(categories.map((c) => [c.id, c])), [categories]);
 
-  type Actions = Omit<DataCtx, 'loading' | 'tasks' | 'categories' | 'categoryMap' | 'pomodoroSettings' | 'boardColumns'>;
+  const retryLoad = useCallback(() => {
+    setLoading(true);
+    reload();
+  }, [reload]);
+
+  type Actions = Omit<DataCtx, 'loading' | 'loadError' | 'retryLoad' | 'tasks' | 'categories' | 'categoryMap' | 'pomodoroSettings' | 'boardColumns'>;
   const actions = useMemo<Actions>(() => {
     const replaceTask = (task: Task) => setTasks((ts) => ts.map((x) => (x.id === task.id ? task : x)));
     return {
@@ -232,8 +245,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [notify, reportError, reload, t]);
 
   const value = useMemo<DataCtx>(
-    () => ({ loading, tasks, categories, categoryMap, pomodoroSettings, boardColumns, ...actions }),
-    [loading, tasks, categories, categoryMap, pomodoroSettings, boardColumns, actions],
+    () => ({ loading, loadError, retryLoad, tasks, categories, categoryMap, pomodoroSettings, boardColumns, ...actions }),
+    [loading, loadError, retryLoad, tasks, categories, categoryMap, pomodoroSettings, boardColumns, actions],
   );
 
   return (

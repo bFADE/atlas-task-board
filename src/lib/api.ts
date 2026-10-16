@@ -21,9 +21,14 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
     throw new ApiError('network');
   }
   if (res.status === 204) return undefined as T;
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new ApiError(data.error ?? 'server_error');
-  return data as T;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) {
+    // Our API always answers errors with JSON; a 5xx without it comes from the dev proxy
+    // (API not running / unreachable), so report it as a network problem.
+    if (!data?.error) throw new ApiError(res.status >= 500 ? 'network' : 'server_error');
+    throw new ApiError(data.error);
+  }
+  return (data ?? {}) as T;
 }
 
 export const api = {
