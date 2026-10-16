@@ -18,6 +18,7 @@
   "errors": {
     "category_exists": "A category with this name already exists.",
     "category_not_found": "This category no longer exists.",
+    "forbidden_host": "Request blocked: Atlas only accepts connections from this computer.",
     "invalid_categories": "Invalid categories.",
     "invalid_color": "Invalid color.",
     "invalid_columns": "Invalid column order.",
