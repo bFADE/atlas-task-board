@@ -56,13 +56,13 @@ export function formatDateTime(iso: string, lang: Lang): string {
 /** Overdue = has a due date in the past and is not Done. With a time, compares the exact moment. */
 export function isOverdue(task: Task, now = new Date()): boolean {
   if (task.status === 'done' || !task.dueDate) return false;
-  if (task.dueTime) return parseDateStr(task.dueDate).getTime() + timeToMs(task.dueTime) < now.getTime();
+  if (task.dueTime) {
+    // Build the wall-clock moment directly (adding ms to midnight is off by 1h on DST days).
+    const [y, m, d] = task.dueDate.split('-').map(Number);
+    const [h, mi] = task.dueTime.split(':').map(Number);
+    return new Date(y, m - 1, d, h, mi).getTime() < now.getTime();
+  }
   return task.dueDate < toDateStr(now);
-}
-
-function timeToMs(t: string) {
-  const [h, m] = t.split(':').map(Number);
-  return (h * 60 + m) * 60_000;
 }
 
 export function monthYearLabel(d: Date, lang: Lang): string {
