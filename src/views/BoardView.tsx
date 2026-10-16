@@ -306,7 +306,7 @@ const Card = memo(function Card({ task, overlay }: { task: Task; overlay?: boole
       } ${overlay ? 'rotate-2 shadow-pop' : ''}`}
       title={overdue ? t('task.overdue') : undefined}
     >
-      <p className={`font-medium leading-snug ${task.status === 'done' ? 'text-muted line-through' : ''}`}>{task.name}</p>
+      <p className={`font-medium leading-snug [overflow-wrap:anywhere] ${task.status === 'done' ? 'text-muted line-through' : ''}`}>{task.name}</p>
       <div className="flex flex-wrap items-center gap-1.5">
         <PriorityBadge priority={task.priority} />
         {task.dueDate && (

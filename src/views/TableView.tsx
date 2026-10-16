@@ -301,9 +301,9 @@ const TableRow = memo(function TableRow({
         );
       case 'name':
         return (
-          <td key={key} className="px-3 py-1.5">
+          <td key={key} className="max-w-md px-3 py-1.5">
             <button
-              className={`text-left font-medium hover:underline ${x.status === 'done' ? 'text-muted line-through' : ''}`}
+              className={`text-left font-medium [overflow-wrap:anywhere] hover:underline ${x.status === 'done' ? 'text-muted line-through' : ''}`}
               onClick={() => openTask(x)}
               title={t('task.edit')}
             >
