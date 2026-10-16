@@ -14,6 +14,15 @@ import {
 
 const PORT = Number(process.env.PORT) || 3001;
 const app = express();
+// DNS-rebinding guard: only answer requests addressed to this machine by name or loopback IP
+// (the Vite proxy forwards the browser's Host, e.g. localhost:5173).
+const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]']);
+app.use((req, res, next) => {
+  const hostname = (req.headers.host ?? '').replace(/:\d+$/, '').toLowerCase();
+  if (!LOCAL_HOSTNAMES.has(hostname)) return res.status(403).json({ error: 'forbidden_host' });
+  next();
+});
+
 app.use(express.json());
 
 const DEFAULT_POMODORO = { pomodoro: 25, short: 5, long: 15, custom: 10, autoCycle: false };

@@ -20,6 +20,15 @@ npm run dev
 
 Abra **http://localhost:5173**. O `npm run dev` sobe o frontend (Vite, porta 5173) e a API (Express, porta 3001) juntos.
 
+**Uso diário (recomendado):** o modo `dev` é para desenvolvimento. Para usar o app no dia a dia, gere a versão de produção e rode só o servidor local:
+
+```bash
+npm run build
+npm start
+```
+
+Depois abra **http://localhost:3001**. Os dois servidores só aceitam conexões da própria máquina (`localhost` / `127.0.0.1`).
+
 Na primeira execução o banco é criado com as categorias iniciais e 10 tarefas de exemplo.
 
 ### Uso
@@ -65,6 +74,15 @@ npm run dev
 ```
 
 Open **http://localhost:5173**. `npm run dev` starts the frontend (Vite, port 5173) and the API (Express, port 3001) together.
+
+**Daily use (recommended):** `dev` mode is meant for development. For everyday use, build once and run only the local server:
+
+```bash
+npm run build
+npm start
+```
+
+Then open **http://localhost:3001**. Both servers only accept connections from this machine (`localhost` / `127.0.0.1`).
 
 On first run the database is created with the starting categories and 10 sample tasks.
 
