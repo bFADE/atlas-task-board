@@ -32,7 +32,8 @@ export default defineConfig({
       deny: ['.env', '.env.*', '*.{crt,pem}', '**/.git/**', '**/data/**', '**/*.db', '**/*.db-*'],
     },
     proxy: {
-      '/api': 'http://localhost:3001',
+      // The API binds 127.0.0.1 only; 'localhost' would also try ::1 and fail under load.
+      '/api': 'http://127.0.0.1:3001',
     },
   },
 });
