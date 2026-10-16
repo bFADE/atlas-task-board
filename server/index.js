@@ -125,7 +125,8 @@ function taskFields(body, { partial, current = null }) {
   const dateAfter = 'due_date' in out ? out.due_date : current?.due_date ?? null;
   if (dateAfter === null && ('due_time' in out || 'due_date' in out)) out.due_time = null;
   if ('notes' in body) {
-    out.notes = String(body.notes ?? '');
+    if (body.notes !== null && typeof body.notes !== 'string') throw new HttpError(400, 'invalid_notes');
+    out.notes = body.notes ?? '';
     if (out.notes.length > MAX_NOTES) throw new HttpError(400, 'notes_too_long');
   }
   if ('position' in body) {
@@ -135,10 +136,14 @@ function taskFields(body, { partial, current = null }) {
   return out;
 }
 
+/** Runs inside the task transaction: an invalid list rolls the whole create/update back. */
 function setTaskCategories(taskId, categoryIds) {
-  if (!Array.isArray(categoryIds)) throw new HttpError(400, 'invalid_categories');
+  const exists = db.prepare('SELECT 1 FROM categories WHERE id = ?');
+  const valid =
+    Array.isArray(categoryIds) && categoryIds.every((cid) => Number.isInteger(cid) && cid > 0 && exists.get(cid));
+  if (!valid) throw new HttpError(400, 'invalid_categories');
   db.prepare('DELETE FROM task_categories WHERE task_id = ?').run(taskId);
-  const link = db.prepare('INSERT OR IGNORE INTO task_categories (task_id, category_id) SELECT ?, id FROM categories WHERE id = ?');
+  const link = db.prepare('INSERT OR IGNORE INTO task_categories (task_id, category_id) VALUES (?, ?)');
   for (const cid of categoryIds) link.run(taskId, cid);
 }
 
@@ -262,22 +267,27 @@ const allSettings = () => ({
 app.get('/api/settings', wrap(allSettings));
 
 app.put('/api/settings', wrap((req) => {
-  if ('boardColumns' in req.body) {
-    const cols = req.body.boardColumns;
+  // Validate everything first so a bad field never leaves a half-saved update.
+  const cols = req.body.boardColumns;
+  if (cols !== undefined) {
     const valid = Array.isArray(cols) && cols.length === STATUSES.length && STATUSES.every((s) => cols.includes(s));
     if (!valid) throw new HttpError(400, 'invalid_columns');
-    setSetting('boardColumns', cols);
   }
   const p = req.body.pomodoro ?? {};
+  if (typeof p !== 'object' || Array.isArray(p)) throw new HttpError(400, 'invalid_settings');
   const current = { ...DEFAULT_POMODORO, ...getSetting('pomodoro', {}) };
   for (const key of ['pomodoro', 'short', 'long', 'custom']) {
     if (key in p) {
-      const n = Number(p[key]);
-      if (!Number.isFinite(n) || n < 1 || n > 600) throw new HttpError(400, 'invalid_duration');
-      current[key] = Math.round(n);
+      const n = p[key];
+      if (!Number.isInteger(n) || n < 1 || n > 600) throw new HttpError(400, 'invalid_duration');
+      current[key] = n;
     }
   }
-  if ('autoCycle' in p) current.autoCycle = !!p.autoCycle;
+  if ('autoCycle' in p) {
+    if (typeof p.autoCycle !== 'boolean') throw new HttpError(400, 'invalid_settings');
+    current.autoCycle = p.autoCycle;
+  }
+  if (cols !== undefined) setSetting('boardColumns', cols);
   setSetting('pomodoro', current);
   return allSettings();
 }));
