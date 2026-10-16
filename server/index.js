@@ -15,6 +15,11 @@ import {
 
 const PORT = Number(process.env.PORT) || 3001;
 const app = express();
+app.disable('x-powered-by');
+
+/** Same limits as the UI (src/lib/types.ts, maxLength on the inputs). */
+const MAX_NAME = 300;
+const MAX_NOTES = 50_000;
 // DNS-rebinding guard: only answer requests addressed to this machine by name or loopback IP
 // (the Vite proxy forwards the browser's Host, e.g. localhost:5173).
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]']);
@@ -24,7 +29,7 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 const DEFAULT_POMODORO = { pomodoro: 25, short: 5, long: 15, custom: 10, autoCycle: false };
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
@@ -95,6 +100,7 @@ function taskFields(body, { partial, current = null }) {
   if ('name' in body || !partial) {
     const name = typeof body.name === 'string' ? body.name.trim() : '';
     if (!name) throw new HttpError(400, 'name_required');
+    if (name.length > MAX_NAME) throw new HttpError(400, 'name_too_long');
     out.name = name;
   }
   if ('status' in body) {
@@ -118,7 +124,10 @@ function taskFields(body, { partial, current = null }) {
   // A time only makes sense with a date: drop it when the task ends up without one.
   const dateAfter = 'due_date' in out ? out.due_date : current?.due_date ?? null;
   if (dateAfter === null && ('due_time' in out || 'due_date' in out)) out.due_time = null;
-  if ('notes' in body) out.notes = String(body.notes ?? '');
+  if ('notes' in body) {
+    out.notes = String(body.notes ?? '');
+    if (out.notes.length > MAX_NOTES) throw new HttpError(400, 'notes_too_long');
+  }
   if ('position' in body) {
     if (typeof body.position !== 'number' || !Number.isFinite(body.position)) throw new HttpError(400, 'invalid_position');
     out.position = body.position;
@@ -326,6 +335,7 @@ app.use('/api', (req, res) => res.status(404).json({ error: 'not_found' }));
 app.use((err, req, res, next) => {
   if (err instanceof HttpError) return res.status(err.status).json({ error: err.code });
   if (err.type === 'entity.parse.failed') return res.status(400).json({ error: 'invalid_json' });
+  if (err.type === 'entity.too.large') return res.status(413).json({ error: 'payload_too_large' });
   console.error(err);
   res.status(500).json({ error: 'server_error' });
 });

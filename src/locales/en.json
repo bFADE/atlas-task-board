@@ -33,8 +33,11 @@
     "invalid_task": "Invalid task.",
     "invalid_time": "Invalid time.",
     "name_required": "Task Name is required.",
+    "name_too_long": "Task Name is too long (max. 300 characters).",
     "network": "Can't reach the local server. Is “npm run dev” running?",
     "not_found": "Not found.",
+    "notes_too_long": "Notes are too long (max. 50,000 characters).",
+    "payload_too_large": "This is too large to save. Try shortening the notes.",
     "server_error": "Something went wrong. Please try again.",
     "task_not_found": "This task no longer exists."
   },

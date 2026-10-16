@@ -33,8 +33,11 @@
     "invalid_task": "Tarefa inválida.",
     "invalid_time": "Horário inválido.",
     "name_required": "O nome da tarefa é obrigatório.",
+    "name_too_long": "O nome da tarefa é longo demais (máx. 300 caracteres).",
     "network": "Não foi possível falar com o servidor local. O “npm run dev” está rodando?",
     "not_found": "Não encontrado.",
+    "notes_too_long": "As notas são longas demais (máx. 50.000 caracteres).",
+    "payload_too_large": "Conteúdo grande demais para salvar. Tente encurtar as notas.",
     "server_error": "Algo deu errado. Tente novamente.",
     "task_not_found": "Essa tarefa não existe mais."
   },

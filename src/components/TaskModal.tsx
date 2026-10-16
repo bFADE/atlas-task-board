@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CATEGORY_PALETTE, PRIORITIES, STATUSES, type Priority, type Status, type TaskInput } from '../lib/types';
+import { CATEGORY_PALETTE, MAX_NAME, MAX_NOTES, PRIORITIES, STATUSES, type Priority, type Status, type TaskInput } from '../lib/types';
 import { formatDateTime } from '../lib/dates';
 import { useData, useLang, useUi } from '../store';
 import { Modal } from './Modal';
@@ -117,6 +117,7 @@ function TaskForm() {
             }`}
             placeholder={t('fields.namePlaceholder')}
             aria-label={t('fields.name')}
+            maxLength={MAX_NAME}
             value={name}
             onChange={(e) => {
               setName(e.target.value);
@@ -244,6 +245,7 @@ function TaskForm() {
             id="f-notes"
             className="input min-h-[120px] resize-y"
             placeholder={t('fields.notesPlaceholder')}
+            maxLength={MAX_NOTES}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
           />

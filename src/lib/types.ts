@@ -1,6 +1,10 @@
 export type Status = 'backlog' | 'todo' | 'in_progress' | 'blocked' | 'done';
 export type Priority = 'high' | 'medium' | 'low';
 
+/** Same limits as the API (server/index.js). */
+export const MAX_NAME = 300;
+export const MAX_NOTES = 50_000;
+
 export const STATUSES: Status[] = ['backlog', 'todo', 'in_progress', 'blocked', 'done'];
 export const PRIORITIES: Priority[] = ['high', 'medium', 'low'];
 
