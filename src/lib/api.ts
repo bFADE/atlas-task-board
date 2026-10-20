@@ -33,9 +33,14 @@ async function request<T>(method: string, url: string, body?: unknown): Promise<
 
 export const api = {
   listTasks: () => request<Task[]>('GET', '/api/tasks'),
-  createTask: (t: TaskInput) => request<Task>('POST', '/api/tasks', t),
+  /** `stages`: titles of new stages created with the task. */
+  createTask: (t: TaskInput & { stages?: string[] }) => request<Task>('POST', '/api/tasks', t),
   updateTask: (id: number, t: TaskInput) => request<Task>('PATCH', `/api/tasks/${id}`, t),
   deleteTask: (id: number) => request<void>('DELETE', `/api/tasks/${id}`),
+  addStage: (taskId: number, title: string) => request<Task>('POST', `/api/tasks/${taskId}/stages`, { title }),
+  updateStage: (id: number, s: { title?: string; done?: boolean }) => request<Task>('PATCH', `/api/stages/${id}`, s),
+  deleteStage: (id: number) => request<Task>('DELETE', `/api/stages/${id}`),
+  reorderStages: (taskId: number, ids: number[]) => request<Task>('PUT', `/api/tasks/${taskId}/stages/order`, { ids }),
   deleteTasks: (ids: number[]) => request<{ removed: number }>('POST', '/api/tasks/bulk-delete', { ids }),
 
   listCategories: () => request<Category[]>('GET', '/api/categories'),

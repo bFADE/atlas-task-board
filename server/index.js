@@ -15,6 +15,8 @@ import {
 import { readGameConfig } from './game/config.js';
 import { applySuggestion } from './game/attributes.js';
 import { router as categoryAttributes } from './routes/categoryAttributes.js';
+import { serializeTasks, getTask } from './tasks.js';
+import { router as stages, stageTitles, insertStages } from './routes/stages.js';
 import { HttpError, wrap, MAX_NAME, MAX_NOTES, TIME_RE, isRealDate } from './http.js';
 
 const PORT = Number(process.env.PORT) || 3001;
@@ -38,33 +40,6 @@ const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
 // ---------- Tasks ----------
 
-function serializeTasks(rows) {
-  const links = db.prepare('SELECT task_id, category_id FROM task_categories').all();
-  const byTask = new Map();
-  for (const l of links) {
-    if (!byTask.has(l.task_id)) byTask.set(l.task_id, []);
-    byTask.get(l.task_id).push(l.category_id);
-  }
-  return rows.map((r) => ({
-    id: r.id,
-    name: r.name,
-    status: r.status,
-    priority: r.priority,
-    dueDate: r.due_date,
-    dueTime: r.due_time,
-    notes: r.notes,
-    createdAt: r.created_at,
-    position: r.position,
-    isSample: !!r.is_sample,
-    categoryIds: byTask.get(r.id) ?? [],
-  }));
-}
-
-function getTask(id) {
-  const row = db.prepare('SELECT * FROM tasks WHERE id = ?').get(id);
-  if (!row) throw new HttpError(404, 'task_not_found');
-  return serializeTasks([row])[0];
-}
 
 /** Validates the writable fields of a task body and maps them to DB columns. */
 /** `current` is the stored row on PATCH, so a time is never kept on a task without a date. */
@@ -125,6 +100,7 @@ app.get('/api/tasks', wrap(() => serializeTasks(db.prepare('SELECT * FROM tasks 
 app.post('/api/tasks', wrap((req, res) => {
   const fields = taskFields(req.body, { partial: false });
   fields.status ??= 'todo';
+  const newStages = req.body.stages === undefined ? [] : stageTitles(req.body.stages);
   const id = db.transaction(() => {
     if (fields.position === undefined) {
       fields.position = db.prepare('SELECT COALESCE(MAX(position), 0) + 1 AS p FROM tasks WHERE status = ?').get(fields.status).p;
@@ -134,6 +110,7 @@ app.post('/api/tasks', wrap((req, res) => {
     const newId = db.prepare(`INSERT INTO tasks (${cols.join(', ')}) VALUES (${cols.map((c) => '@' + c).join(', ')})`)
       .run(fields).lastInsertRowid;
     if (req.body.categoryIds) setTaskCategories(newId, req.body.categoryIds);
+    if (newStages.length) insertStages(newId, newStages);
     return newId;
   })();
   res.status(201).json(getTask(id));
@@ -265,6 +242,10 @@ app.put('/api/settings', wrap((req) => {
   setSetting('pomodoro', current);
   return allSettings();
 }));
+
+// ---------- Stages (checklist inside a task) ----------
+
+app.use('/api', stages);
 
 // ---------- Game: category attributes ----------
 

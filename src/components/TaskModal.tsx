@@ -6,6 +6,7 @@ import { useData, useLang, useUi } from '../store';
 import { Modal } from './Modal';
 import { DateInput } from './DateInput';
 import { TimeInput } from './TimeInput';
+import { StageEditor } from './Stages';
 import { Pill } from './Badges';
 
 export function TaskModal() {
@@ -19,7 +20,8 @@ function TaskForm() {
   const { t } = useTranslation();
   const lang = useLang();
   const { taskModal, closeTask, confirm } = useUi();
-  const { categories, createTask, updateTask, deleteTask, createCategory } = useData();
+  const { categories, createTask, updateTask, deleteTask, createCategory, tasks, addStage, updateStage, deleteStage, reorderStages } =
+    useData();
   const task = taskModal!.task;
   const init = { ...taskModal!.defaults, ...task };
 
@@ -30,6 +32,10 @@ function TaskForm() {
   const [dueTime, setDueTime] = useState<string | null>(init.dueTime ?? null);
   const [categoryIds, setCategoryIds] = useState<number[]>(init.categoryIds ?? []);
   const [notes, setNotes] = useState(init.notes ?? '');
+  // Stages of an existing task are saved as you edit them (live from the store);
+  // a new task keeps them here and sends them with the task.
+  const liveStages = task ? tasks.find((x) => x.id === task.id)?.stages ?? task.stages : null;
+  const [draftStages, setDraftStages] = useState<{ id: number; title: string; done: boolean }[]>([]);
   const [newCat, setNewCat] = useState('');
   const [nameError, setNameError] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -69,7 +75,9 @@ function TaskForm() {
       notes,
     };
     // Only close once the server has the data; on failure the form keeps everything typed.
-    const ok = task ? await updateTask(task.id, payload) : !!(await createTask(payload));
+    const ok = task
+      ? await updateTask(task.id, payload)
+      : !!(await createTask({ ...payload, stages: draftStages.map((s) => s.title) }));
     setSaving(false);
     if (ok) closeTask();
     else setSaveFailed(true);
@@ -82,7 +90,8 @@ function TaskForm() {
     dueDate !== (init.dueDate ?? null) ||
     (dueTime ?? null) !== (init.dueTime ?? null) ||
     notes !== (init.notes ?? '') ||
-    [...categoryIds].sort().join() !== [...(init.categoryIds ?? [])].sort().join();
+    [...categoryIds].sort().join() !== [...(init.categoryIds ?? [])].sort().join() ||
+    draftStages.length > 0;
 
   // Esc, backdrop click and ✕ ask before throwing away unsaved edits.
   const requestClose = async () => {
@@ -243,6 +252,25 @@ function TaskForm() {
             </>
           )}
         </div>
+
+        {task && liveStages ? (
+          <StageEditor
+            items={liveStages}
+            onAdd={(title) => addStage(task.id, title)}
+            onRename={(id, title) => updateStage(task.id, id, { title })}
+            onToggle={(id, done) => updateStage(task.id, id, { done })}
+            onDelete={(id) => deleteStage(task.id, id)}
+            onReorder={(ids) => reorderStages(task.id, ids)}
+          />
+        ) : (
+          <StageEditor
+            items={draftStages}
+            onAdd={(title) => setDraftStages((d) => [...d, { id: Date.now() + Math.random(), title, done: false }])}
+            onRename={(id, title) => setDraftStages((d) => d.map((x) => (x.id === id ? { ...x, title } : x)))}
+            onDelete={(id) => setDraftStages((d) => d.filter((x) => x.id !== id))}
+            onReorder={(ids) => setDraftStages((d) => ids.map((id) => d.find((x) => x.id === id)!))}
+          />
+        )}
 
         <div>
           <label className="field-label mb-1 block" htmlFor="f-notes">

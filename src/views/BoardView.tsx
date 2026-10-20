@@ -30,6 +30,7 @@ import { STATUSES, STATUS_COLORS, type Status, type Task } from '../lib/types';
 import { formatDue, isOverdue } from '../lib/dates';
 import { useData, useLang, useNow, useUi } from '../store';
 import { CategoryTags, PriorityBadge } from '../components/Badges';
+import { StageProgress } from '../components/Stages';
 
 type Columns = Record<Status, number[]>;
 
@@ -316,6 +317,7 @@ const Card = memo(function Card({ task, overlay }: { task: Task; overlay?: boole
         )}
       </div>
       <CategoryTags ids={task.categoryIds} map={categoryMap} />
+      <StageProgress stages={task.stages} />
     </article>
   );
 });

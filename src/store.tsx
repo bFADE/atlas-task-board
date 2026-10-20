@@ -36,7 +36,11 @@ interface DataCtx {
   boardColumns: Status[];
   saveBoardColumns: (cols: Status[]) => Promise<void>;
   deleteTasks: (ids: number[]) => Promise<void>;
-  createTask: (t: TaskInput) => Promise<Task | null>;
+  createTask: (t: TaskInput & { stages?: string[] }) => Promise<Task | null>;
+  addStage: (taskId: number, title: string) => Promise<boolean>;
+  updateStage: (taskId: number, stageId: number, s: { title?: string; done?: boolean }) => Promise<boolean>;
+  deleteStage: (taskId: number, stageId: number) => Promise<boolean>;
+  reorderStages: (taskId: number, ids: number[]) => Promise<boolean>;
   /** Resolves to false (after rolling back and showing a toast) when the save fails. */
   updateTask: (id: number, t: TaskInput) => Promise<boolean>;
   deleteTask: (id: number) => Promise<void>;
@@ -145,6 +149,40 @@ export function DataProvider({ children }: { children: ReactNode }) {
           return null;
         }
       },
+
+      // Stages: optimistic local change, then the server's version of the task (or a rollback).
+      ...(() => {
+        const stageOp = async (taskId: number, local: ((t: Task) => Task) | null, call: () => Promise<Task>) => {
+          const prev = tasksRef.current.find((x) => x.id === taskId);
+          if (!prev) return false;
+          if (local) setTasks((ts) => ts.map((x) => (x.id === taskId ? local(x) : x)));
+          try {
+            replaceTask(await call());
+            return true;
+          } catch (err) {
+            replaceTask(prev);
+            reportError(err);
+            return false;
+          }
+        };
+        return {
+          addStage: (taskId: number, title: string) => stageOp(taskId, null, () => api.addStage(taskId, title)),
+          updateStage: (taskId: number, stageId: number, s: { title?: string; done?: boolean }) =>
+            stageOp(
+              taskId,
+              (t) => ({ ...t, stages: t.stages.map((x) => (x.id === stageId ? { ...x, ...s } : x)) }),
+              () => api.updateStage(stageId, s),
+            ),
+          deleteStage: (taskId: number, stageId: number) =>
+            stageOp(taskId, (t) => ({ ...t, stages: t.stages.filter((x) => x.id !== stageId) }), () => api.deleteStage(stageId)),
+          reorderStages: (taskId: number, ids: number[]) =>
+            stageOp(
+              taskId,
+              (t) => ({ ...t, stages: ids.map((id) => t.stages.find((x) => x.id === id)!).filter(Boolean) }),
+              () => api.reorderStages(taskId, ids),
+            ),
+        };
+      })(),
 
       // Optimistic: the UI (drag and drop, inline selects) updates immediately.
       async updateTask(id, input) {

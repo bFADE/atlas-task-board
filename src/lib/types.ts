@@ -40,9 +40,23 @@ export interface Task {
   position: number;
   isSample: boolean;
   categoryIds: number[];
+  /** Ordered checklist (GAME_DESIGN.md §9). */
+  stages: Stage[];
 }
 
-export type TaskInput = Partial<Omit<Task, 'id' | 'createdAt' | 'isSample'>>;
+export interface Stage {
+  id: number;
+  title: string;
+  done: boolean;
+  position: number;
+  completedAt: string | null;
+}
+
+/** Same limits as the API (server/routes/stages.js). */
+export const MAX_STAGE_TITLE = 200;
+export const MAX_STAGES = 100;
+
+export type TaskInput = Partial<Omit<Task, 'id' | 'createdAt' | 'isSample' | 'stages'>>;
 
 /** Game attributes (GAME_DESIGN.md §2); stable keys, labels in locales (attributes.<KEY>). */
 export const ATTRIBUTES = ['INT', 'SENSE', 'STR', 'AGI', 'VIT', 'MIND', 'FAITH', 'CHA', 'WILL', 'DISC'] as const;

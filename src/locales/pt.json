@@ -33,6 +33,9 @@
     "invalid_priority": "Prioridade inválida.",
     "invalid_session_key": "Sessão inválida.",
     "invalid_settings": "Configurações inválidas.",
+    "invalid_stage_done": "Estado da etapa inválido.",
+    "invalid_stage_order": "Ordem de etapas inválida. Recarregue e tente de novo.",
+    "invalid_stages": "Etapas inválidas.",
     "invalid_status": "Status inválido.",
     "invalid_task": "Tarefa inválida.",
     "invalid_time": "Horário inválido.",
@@ -44,7 +47,11 @@
     "payload_too_large": "Conteúdo grande demais para salvar. Tente encurtar as notas.",
     "same_attribute": "O atributo secundário precisa ser diferente do principal.",
     "server_error": "Algo deu errado. Tente novamente.",
-    "task_not_found": "Essa tarefa não existe mais."
+    "stage_not_found": "Essa etapa não existe mais.",
+    "stage_title_required": "A etapa precisa de um título.",
+    "stage_title_too_long": "O título da etapa é longo demais (máx. 200 caracteres).",
+    "task_not_found": "Essa tarefa não existe mais.",
+    "too_many_stages": "Uma tarefa pode ter no máximo 100 etapas."
   },
   "status": {
     "backlog": "📥 Backlog",
@@ -255,5 +262,15 @@
     "none": "—",
     "primaryFor": "Atributo principal de {{name}}",
     "secondaryFor": "Atributo secundário de {{name}}"
+  },
+  "stages": {
+    "title": "Etapas",
+    "progress": "{{done}} de {{total}} etapas concluídas",
+    "addPlaceholder": "Adicionar etapa…",
+    "full": "Limite de etapas atingido (100)",
+    "drag": "Arraste para reordenar",
+    "toggle": "Marcar “{{title}}” como concluída",
+    "rename": "Editar etapa",
+    "delete": "Excluir etapa"
   }
 }

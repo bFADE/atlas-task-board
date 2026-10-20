@@ -33,6 +33,9 @@
     "invalid_priority": "Invalid priority.",
     "invalid_session_key": "Invalid session.",
     "invalid_settings": "Invalid settings.",
+    "invalid_stage_done": "Invalid stage state.",
+    "invalid_stage_order": "Invalid stage order. Reload and try again.",
+    "invalid_stages": "Invalid stages.",
     "invalid_status": "Invalid status.",
     "invalid_task": "Invalid task.",
     "invalid_time": "Invalid time.",
@@ -44,7 +47,11 @@
     "payload_too_large": "This is too large to save. Try shortening the notes.",
     "same_attribute": "The secondary attribute must be different from the primary.",
     "server_error": "Something went wrong. Please try again.",
-    "task_not_found": "This task no longer exists."
+    "stage_not_found": "This stage no longer exists.",
+    "stage_title_required": "A stage needs a title.",
+    "stage_title_too_long": "Stage title is too long (max. 200 characters).",
+    "task_not_found": "This task no longer exists.",
+    "too_many_stages": "A task can have at most 100 stages."
   },
   "status": {
     "backlog": "📥 Backlog",
@@ -255,5 +262,15 @@
     "none": "—",
     "primaryFor": "Primary attribute for {{name}}",
     "secondaryFor": "Secondary attribute for {{name}}"
+  },
+  "stages": {
+    "title": "Stages",
+    "progress": "{{done}} of {{total}} stages done",
+    "addPlaceholder": "Add a stage…",
+    "full": "Stage limit reached (100)",
+    "drag": "Drag to reorder",
+    "toggle": "Mark “{{title}}” as done",
+    "rename": "Edit stage",
+    "delete": "Delete stage"
   }
 }

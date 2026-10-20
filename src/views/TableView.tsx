@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { PRIORITIES, PRIORITY_COLORS, STATUSES, STATUS_COLORS, type Priority, type Status, type Task, type TaskInput } from '../lib/types';
 import { formatDue, isOverdue, type Lang } from '../lib/dates';
 import { useData, useLang, useNow, useUi } from '../store';
+import { StageProgress } from '../components/Stages';
 
 type Key = 'status' | 'priority' | 'name' | 'notes' | 'dueDate';
 type Sort = { key: Key; dir: 'asc' | 'desc' };
@@ -310,6 +311,7 @@ const TableRow = memo(function TableRow({
             >
               {x.name}
             </button>
+            <StageProgress stages={x.stages} className="mt-1 max-w-[220px]" />
           </td>
         );
       case 'notes':
