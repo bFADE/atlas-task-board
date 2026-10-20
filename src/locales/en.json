@@ -16,17 +16,25 @@
     "title": "Are you sure?"
   },
   "errors": {
+    "appointment_not_found": "This appointment no longer exists.",
+    "appointment_title_required": "The appointment needs a title.",
+    "appointment_title_too_long": "Title is too long (max. 200 characters).",
     "category_exists": "A category with this name already exists.",
     "category_not_found": "This category no longer exists.",
+    "end_before_start": "The end must be after the start.",
     "forbidden_host": "Request blocked: Atlas only accepts connections from this computer.",
+    "invalid_appointment_status": "Invalid appointment status.",
     "invalid_attribute": "Invalid attribute.",
     "invalid_categories": "Invalid categories.",
+    "invalid_category": "Invalid category.",
     "invalid_color": "Invalid color.",
     "invalid_columns": "Invalid column order.",
     "invalid_date": "Invalid date.",
     "invalid_duration": "Durations must be between 1 and 600 minutes.",
+    "invalid_end": "Invalid end date or time.",
     "invalid_ids": "Invalid selection.",
     "invalid_json": "Invalid request.",
+    "invalid_location": "Invalid location.",
     "invalid_mode": "Invalid timer mode.",
     "invalid_notes": "Invalid notes.",
     "invalid_position": "Invalid position.",
@@ -36,9 +44,11 @@
     "invalid_stage_done": "Invalid stage state.",
     "invalid_stage_order": "Invalid stage order. Reload and try again.",
     "invalid_stages": "Invalid stages.",
+    "invalid_start": "Invalid start date or time.",
     "invalid_status": "Invalid status.",
     "invalid_task": "Invalid task.",
     "invalid_time": "Invalid time.",
+    "location_too_long": "Location is too long (max. 200 characters).",
     "name_required": "Task Name is required.",
     "name_too_long": "Task Name is too long (max. 300 characters).",
     "network": "Can't reach the local server. Is “npm run dev” running?",
@@ -272,5 +282,25 @@
     "toggle": "Mark “{{title}}” as done",
     "rename": "Edit stage",
     "delete": "Delete stage"
+  },
+  "appointments": {
+    "title": "Appointments (preview)",
+    "help": "A simple list to try appointments. They will appear in the calendar in the next version.",
+    "empty": "No appointments yet.",
+    "titlePlaceholder": "Appointment title",
+    "noCategory": "No category",
+    "start": "Start",
+    "end": "End",
+    "location": "Location (optional)",
+    "add": "Add appointment",
+    "edit": "Edit appointment",
+    "status": "Status",
+    "incomplete": "Fill in the title, start date, start time and end time.",
+    "confirmDelete": "Delete the appointment “{{title}}”?",
+    "statuses": {
+      "planned": "Planned",
+      "attended": "Attended",
+      "missed": "Missed"
+    }
   }
 }

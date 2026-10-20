@@ -15,6 +15,7 @@ import {
 import { readGameConfig } from './game/config.js';
 import { applySuggestion } from './game/attributes.js';
 import { router as categoryAttributes } from './routes/categoryAttributes.js';
+import { router as appointments } from './routes/appointments.js';
 import { serializeTasks, getTask } from './tasks.js';
 import { router as stages, stageTitles, insertStages } from './routes/stages.js';
 import { HttpError, wrap, MAX_NAME, MAX_NOTES, TIME_RE, isRealDate } from './http.js';
@@ -246,6 +247,10 @@ app.put('/api/settings', wrap((req) => {
 // ---------- Stages (checklist inside a task) ----------
 
 app.use('/api', stages);
+
+// ---------- Appointments ----------
+
+app.use('/api/appointments', appointments);
 
 // ---------- Game: category attributes ----------
 

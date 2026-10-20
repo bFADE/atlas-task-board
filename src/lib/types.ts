@@ -68,6 +68,29 @@ export interface CategoryAttributes {
   secondary: Attribute | null;
 }
 
+export const APPOINTMENT_STATUSES = ['planned', 'attended', 'missed'] as const;
+export type AppointmentStatus = (typeof APPOINTMENT_STATUSES)[number];
+
+/** start/end: local 'YYYY-MM-DDTHH:MM'. */
+export interface Appointment {
+  id: number;
+  title: string;
+  categoryId: number | null;
+  start: string;
+  end: string;
+  location: string;
+  notes: string;
+  status: AppointmentStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AppointmentInput = Partial<Pick<Appointment, 'title' | 'categoryId' | 'start' | 'end' | 'location' | 'notes' | 'status'>>;
+
+/** Same limits as the API (server/routes/appointments.js). */
+export const MAX_APPOINTMENT_TITLE = 200;
+export const MAX_LOCATION = 200;
+
 export interface Category {
   id: number;
   name: string;

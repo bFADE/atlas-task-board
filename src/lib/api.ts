@@ -1,4 +1,4 @@
-import type { Attribute, Category, CategoryAttributes, PomodoroSettings, SessionSummary, Status, Task, TaskInput } from './types';
+import type { Appointment, AppointmentInput, Attribute, Category, CategoryAttributes, PomodoroSettings, SessionSummary, Status, Task, TaskInput } from './types';
 
 type Settings = { pomodoro: PomodoroSettings; boardColumns: Status[] };
 
@@ -47,6 +47,11 @@ export const api = {
   createCategory: (c: Partial<Category>) => request<Category>('POST', '/api/categories', c),
   updateCategory: (id: number, c: Partial<Category>) => request<Category>('PATCH', `/api/categories/${id}`, c),
   deleteCategory: (id: number) => request<void>('DELETE', `/api/categories/${id}`),
+
+  listAppointments: () => request<Appointment[]>('GET', '/api/appointments'),
+  createAppointment: (a: AppointmentInput) => request<Appointment>('POST', '/api/appointments', a),
+  updateAppointment: (id: number, a: AppointmentInput) => request<Appointment>('PATCH', `/api/appointments/${id}`, a),
+  deleteAppointment: (id: number) => request<void>('DELETE', `/api/appointments/${id}`),
 
   listCategoryAttributes: () => request<CategoryAttributes[]>('GET', '/api/category-attributes'),
   setCategoryAttributes: (categoryId: number, primary: Attribute, secondary: Attribute | null) =>

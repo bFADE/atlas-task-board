@@ -11,6 +11,7 @@ import {
 import { useData, useUi } from '../store';
 import { Modal } from './Modal';
 import { Pill } from './Badges';
+import { AppointmentsSection } from './AppointmentsSection';
 
 export function SettingsModal() {
   const { t } = useTranslation();
@@ -37,6 +38,7 @@ export function SettingsModal() {
         </section>
         <CategorySection />
         <AttributeSection />
+        <AppointmentsSection />
         <section>
           <h3 className="section-title">{t('settings.sampleTitle')}</h3>
           <p className="mb-3 text-sm text-muted">{t('settings.sampleHelp', { count: sampleCount })}</p>

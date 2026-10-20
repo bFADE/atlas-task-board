@@ -16,17 +16,25 @@
     "title": "Tem certeza?"
   },
   "errors": {
+    "appointment_not_found": "Esse compromisso não existe mais.",
+    "appointment_title_required": "O compromisso precisa de um título.",
+    "appointment_title_too_long": "O título é longo demais (máx. 200 caracteres).",
     "category_exists": "Já existe uma categoria com esse nome.",
     "category_not_found": "Essa categoria não existe mais.",
+    "end_before_start": "O fim precisa ser depois do início.",
     "forbidden_host": "Requisição bloqueada: o Atlas só aceita conexões deste computador.",
+    "invalid_appointment_status": "Status do compromisso inválido.",
     "invalid_attribute": "Atributo inválido.",
     "invalid_categories": "Categorias inválidas.",
+    "invalid_category": "Categoria inválida.",
     "invalid_color": "Cor inválida.",
     "invalid_columns": "Ordem de colunas inválida.",
     "invalid_date": "Data inválida.",
     "invalid_duration": "As durações devem ficar entre 1 e 600 minutos.",
+    "invalid_end": "Data ou hora de fim inválida.",
     "invalid_ids": "Seleção inválida.",
     "invalid_json": "Requisição inválida.",
+    "invalid_location": "Local inválido.",
     "invalid_mode": "Modo do timer inválido.",
     "invalid_notes": "Notas inválidas.",
     "invalid_position": "Posição inválida.",
@@ -36,9 +44,11 @@
     "invalid_stage_done": "Estado da etapa inválido.",
     "invalid_stage_order": "Ordem de etapas inválida. Recarregue e tente de novo.",
     "invalid_stages": "Etapas inválidas.",
+    "invalid_start": "Data ou hora de início inválida.",
     "invalid_status": "Status inválido.",
     "invalid_task": "Tarefa inválida.",
     "invalid_time": "Horário inválido.",
+    "location_too_long": "O local é longo demais (máx. 200 caracteres).",
     "name_required": "O nome da tarefa é obrigatório.",
     "name_too_long": "O nome da tarefa é longo demais (máx. 300 caracteres).",
     "network": "Não foi possível falar com o servidor local. O “npm run dev” está rodando?",
@@ -272,5 +282,25 @@
     "toggle": "Marcar “{{title}}” como concluída",
     "rename": "Editar etapa",
     "delete": "Excluir etapa"
+  },
+  "appointments": {
+    "title": "Compromissos (prévia)",
+    "help": "Uma lista simples para testar os compromissos. Eles vão aparecer no calendário na próxima versão.",
+    "empty": "Nenhum compromisso ainda.",
+    "titlePlaceholder": "Título do compromisso",
+    "noCategory": "Sem categoria",
+    "start": "Início",
+    "end": "Fim",
+    "location": "Local (opcional)",
+    "add": "Adicionar compromisso",
+    "edit": "Editar compromisso",
+    "status": "Status",
+    "incomplete": "Preencha o título, a data e a hora de início e a hora de fim.",
+    "confirmDelete": "Excluir o compromisso “{{title}}”?",
+    "statuses": {
+      "planned": "Planejado",
+      "attended": "Compareci",
+      "missed": "Faltei"
+    }
   }
 }
