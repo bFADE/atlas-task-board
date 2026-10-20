@@ -93,7 +93,7 @@ Day boundary: **03:00** local time (configurable). Quests are generated on the f
 | Body | 1 physical activity (gym, Muay Thai, walk or run of 30+ min) | same | VIT, STR or AGI by category | 20 XP |
 | Bonus (optional) | Most neglected of FAITH, CHA, MIND, SENSE | same | that attribute | 15 XP |
 
-**Daily Clear** = the 3 fixed quests: +30 XP, +30 DISC, streak +1. The bonus quest is outside the Daily Clear. Quest XP does not count toward the soft cap. Quest templates and targets are rows in `quest_templates`.
+**Daily Clear** = the 3 fixed quests: +30 XP, +30 DISC, streak +1. The bonus quest is outside the Daily Clear. Quest XP does not count toward the soft cap. Quest targets and rewards are rows in `game_config` (`quest.<key>.*`); `quest_templates` holds only the structure (metric, attribute, whether the quest counts toward the Daily Clear).
 
 ## 6. Penalties and debuffs
 
@@ -110,7 +110,7 @@ Day boundary: **03:00** local time (configurable). Quests are generated on the f
 
 ## 7. Escape valves
 
-- **Rest day:** at least 1 per week is guaranteed; the user may mark 1 extra (max 2 per week). A rest day can be marked up to the day boundary. No penalty, streak preserved, small MIND XP. XP earned on a rest day still counts.
+- **Rest day:** at least 1 per week is guaranteed; the user may mark 1 extra (max 2 per week). A rest day can be marked up to the day boundary. No penalty, streak preserved, 10 MIND XP (`rest.mind_xp`). XP earned on a rest day still counts.
 - **Vacation/sick mode:** pauses quests for a date range; paused days are not failures.
 - **Streak shield:** 1 per calendar month, automatic. When a day fails and the streak is 7 or more, the shield absorbs it and the streak is kept.
 
@@ -120,7 +120,7 @@ Day boundary: **03:00** local time (configurable). Quests are generated on the f
 |---|---|
 | D | 7 Daily Clear days (not necessarily consecutive) + 3 High tasks |
 | C | 14 Daily Clear days + 5 High tasks + progress in 3 different attributes |
-| B | 21 Daily Clear days + 8 High tasks + balance across attributes |
+| B | 21 Daily Clear days + 8 High tasks + balance across attributes (provisionally: all attributes at level 3 or higher, `trial.B.balance_min_attribute_level`) |
 | A, S | To be defined when reached |
 
 A trial has a suggested date but no failure state: not finishing it only holds the promotion.
