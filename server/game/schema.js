@@ -1,6 +1,7 @@
 // Atlas v2 game schema (GAME_DESIGN.md §10). Stable English keys only; labels live in src/locales.
 import fs from 'node:fs';
 import path from 'node:path';
+import { applySuggestion } from './attributes.js';
 
 export const ATTRIBUTES = ['INT', 'SENSE', 'STR', 'AGI', 'VIT', 'MIND', 'FAITH', 'CHA', 'WILL', 'DISC'];
 export const RANKS = ['E', 'D', 'C', 'B', 'A', 'S'];
@@ -169,6 +170,7 @@ export const MIGRATIONS = [
          VALUES (@key, @metric, @attribute, @in_daily_clear, @sort_order)`,
       );
       for (const q of QUEST_TEMPLATES) quest.run(q);
+      for (const c of db.prepare('SELECT id, name FROM categories').all()) applySuggestion(db, c.id, c.name);
       db.prepare('INSERT OR IGNORE INTO player_profile (id, created_at, updated_at) VALUES (1, ?, ?)').run(now, now);
     },
   },

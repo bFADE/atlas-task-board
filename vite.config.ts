@@ -33,7 +33,8 @@ export default defineConfig({
     },
     proxy: {
       // The API binds 127.0.0.1 only; 'localhost' would also try ::1 and fail under load.
-      '/api': 'http://127.0.0.1:3001',
+      // ATLAS_API_PORT runs a second copy side by side (e.g. tests against another database).
+      '/api': `http://127.0.0.1:${process.env.ATLAS_API_PORT ?? 3001}`,
     },
   },
 });

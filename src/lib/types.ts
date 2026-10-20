@@ -44,6 +44,16 @@ export interface Task {
 
 export type TaskInput = Partial<Omit<Task, 'id' | 'createdAt' | 'isSample'>>;
 
+/** Game attributes (GAME_DESIGN.md §2); stable keys, labels in locales (attributes.<KEY>). */
+export const ATTRIBUTES = ['INT', 'SENSE', 'STR', 'AGI', 'VIT', 'MIND', 'FAITH', 'CHA', 'WILL', 'DISC'] as const;
+export type Attribute = (typeof ATTRIBUTES)[number];
+
+export interface CategoryAttributes {
+  categoryId: number;
+  primary: Attribute;
+  secondary: Attribute | null;
+}
+
 export interface Category {
   id: number;
   name: string;

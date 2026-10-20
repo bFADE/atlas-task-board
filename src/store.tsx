@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, ApiError } from './lib/api';
-import { STATUSES, type Category, type PomodoroSettings, type Status, type Task, type TaskInput } from './lib/types';
+import { STATUSES, type Attribute, type Category, type CategoryAttributes, type PomodoroSettings, type Status, type Task, type TaskInput } from './lib/types';
 import type { Lang } from './lib/dates';
 
 // ---------- Toasts ----------
@@ -28,6 +28,10 @@ interface DataCtx {
   tasks: Task[];
   categories: Category[];
   categoryMap: Map<number, Category>;
+  /** Category → game attributes (one entry per mapped category). */
+  categoryAttributes: CategoryAttributes[];
+  /** primary null clears the mapping. */
+  saveCategoryAttributes: (categoryId: number, primary: Attribute | null, secondary: Attribute | null) => Promise<boolean>;
   pomodoroSettings: PomodoroSettings;
   boardColumns: Status[];
   saveBoardColumns: (cols: Status[]) => Promise<void>;
@@ -59,6 +63,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [pomodoroSettings, setPomodoroSettings] = useState<PomodoroSettings>(DEFAULT_POMODORO);
   const [boardColumns, setBoardColumns] = useState<Status[]>(STATUSES);
+  const [categoryAttributes, setCategoryAttributes] = useState<CategoryAttributes[]>([]);
   const [toasts, setToasts] = useState<Toast[]>([]);
   const toastId = useRef(0);
 
@@ -82,9 +87,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const reload = useCallback(async () => {
     try {
-      const [ts, cs, s] = await Promise.all([api.listTasks(), api.listCategories(), api.getSettings()]);
+      const [ts, cs, s, ca] = await Promise.all([
+        api.listTasks(),
+        api.listCategories(),
+        api.getSettings(),
+        api.listCategoryAttributes(),
+      ]);
       setTasks(ts);
       setCategories(cs);
+      setCategoryAttributes(ca);
       setPomodoroSettings(s.pomodoro);
       setBoardColumns(s.boardColumns);
       loadedOnce.current = true;
@@ -114,7 +125,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
     reload();
   }, [reload]);
 
-  type Actions = Omit<DataCtx, 'loading' | 'loadError' | 'retryLoad' | 'tasks' | 'categories' | 'categoryMap' | 'pomodoroSettings' | 'boardColumns'>;
+  type Actions = Omit<
+    DataCtx,
+    'loading' | 'loadError' | 'retryLoad' | 'tasks' | 'categories' | 'categoryMap' | 'categoryAttributes' | 'pomodoroSettings' | 'boardColumns'
+  >;
   const actions = useMemo<Actions>(() => {
     const replaceTask = (task: Task) => setTasks((ts) => ts.map((x) => (x.id === task.id ? task : x)));
     return {
@@ -183,6 +197,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         try {
           const c = await api.createCategory({ name, color });
           setCategories((cs) => [...cs, c]);
+          // The server may have applied a suggested attribute mapping (e.g. "Gym" → STR/VIT).
+          api.listCategoryAttributes().then(setCategoryAttributes).catch(() => {});
           return c;
         } catch (err) {
           reportError(err);
@@ -205,9 +221,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
         try {
           await api.deleteCategory(id);
           setCategories((cs) => cs.filter((x) => x.id !== id));
+          setCategoryAttributes((ca) => ca.filter((x) => x.categoryId !== id));
           setTasks((ts) => ts.map((x) => ({ ...x, categoryIds: x.categoryIds.filter((c) => c !== id) })));
         } catch (err) {
           reportError(err);
+        }
+      },
+
+      async saveCategoryAttributes(categoryId, primary, secondary) {
+        try {
+          if (primary === null) {
+            await api.clearCategoryAttributes(categoryId);
+            setCategoryAttributes((ca) => ca.filter((x) => x.categoryId !== categoryId));
+          } else {
+            const saved = await api.setCategoryAttributes(categoryId, primary, secondary);
+            setCategoryAttributes((ca) => [...ca.filter((x) => x.categoryId !== categoryId), saved]);
+          }
+          return true;
+        } catch (err) {
+          reportError(err);
+          return false;
         }
       },
 
@@ -245,8 +278,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [notify, reportError, reload, t]);
 
   const value = useMemo<DataCtx>(
-    () => ({ loading, loadError, retryLoad, tasks, categories, categoryMap, pomodoroSettings, boardColumns, ...actions }),
-    [loading, loadError, retryLoad, tasks, categories, categoryMap, pomodoroSettings, boardColumns, actions],
+    () => ({
+      loading,
+      loadError,
+      retryLoad,
+      tasks,
+      categories,
+      categoryMap,
+      categoryAttributes,
+      pomodoroSettings,
+      boardColumns,
+      ...actions,
+    }),
+    [loading, loadError, retryLoad, tasks, categories, categoryMap, categoryAttributes, pomodoroSettings, boardColumns, actions],
   );
 
   return (

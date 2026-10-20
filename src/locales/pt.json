@@ -19,6 +19,7 @@
     "category_exists": "Já existe uma categoria com esse nome.",
     "category_not_found": "Essa categoria não existe mais.",
     "forbidden_host": "Requisição bloqueada: o Atlas só aceita conexões deste computador.",
+    "invalid_attribute": "Atributo inválido.",
     "invalid_categories": "Categorias inválidas.",
     "invalid_color": "Cor inválida.",
     "invalid_columns": "Ordem de colunas inválida.",
@@ -41,6 +42,7 @@
     "not_found": "Não encontrado.",
     "notes_too_long": "As notas são longas demais (máx. 50.000 caracteres).",
     "payload_too_large": "Conteúdo grande demais para salvar. Tente encurtar as notas.",
+    "same_attribute": "O atributo secundário precisa ser diferente do principal.",
     "server_error": "Algo deu errado. Tente novamente.",
     "task_not_found": "Essa tarefa não existe mais."
   },
@@ -161,7 +163,9 @@
     "boardHelp": "Arraste o cabeçalho de uma coluna no Quadro para mudar a ordem das colunas.",
     "resetColumns": "Restaurar ordem padrão das colunas",
     "confirmRestoreSample": "Adicionar de volta as tarefas de exemplo que estão faltando? Nada é excluído, e as tarefas de exemplo que você editou continuam como suas.",
-    "sampleRestored_zero": "Todas as tarefas de exemplo já estão aqui."
+    "sampleRestored_zero": "Todas as tarefas de exemplo já estão aqui.",
+    "attributesTitle": "Atributos das categorias",
+    "attributesHelp": "Escolha quais atributos cada categoria treina. O XP começa a contar em uma versão futura."
   },
   "pomodoro": {
     "autoCycle": "Ciclo automático (4 pomodoros e depois uma pausa longa)",
@@ -234,5 +238,22 @@
   "time": {
     "placeholder": "HH:MM",
     "invalid": "Use o formato HH:MM (ex.: 14:30)."
+  },
+  "attributes": {
+    "INT": "Inteligência",
+    "SENSE": "Percepção",
+    "STR": "Força",
+    "AGI": "Agilidade",
+    "VIT": "Vitalidade",
+    "MIND": "Mente",
+    "FAITH": "Fé",
+    "CHA": "Carisma",
+    "WILL": "Vontade",
+    "DISC": "Disciplina",
+    "primary": "Atributo principal (100%)",
+    "secondary": "Secundário (50%, opcional)",
+    "none": "—",
+    "primaryFor": "Atributo principal de {{name}}",
+    "secondaryFor": "Atributo secundário de {{name}}"
   }
 }

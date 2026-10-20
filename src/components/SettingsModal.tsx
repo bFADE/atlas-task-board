@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CATEGORY_PALETTE, STATUSES, type Category, type PomodoroSettings } from '../lib/types';
+import {
+  ATTRIBUTES,
+  CATEGORY_PALETTE,
+  STATUSES,
+  type Attribute,
+  type Category,
+  type PomodoroSettings,
+} from '../lib/types';
 import { useData, useUi } from '../store';
 import { Modal } from './Modal';
 import { Pill } from './Badges';
@@ -29,6 +36,7 @@ export function SettingsModal() {
           </button>
         </section>
         <CategorySection />
+        <AttributeSection />
         <section>
           <h3 className="section-title">{t('settings.sampleTitle')}</h3>
           <p className="mb-3 text-sm text-muted">{t('settings.sampleHelp', { count: sampleCount })}</p>
@@ -240,5 +248,86 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (c: string)
         </>
       )}
     </div>
+  );
+}
+
+/** Category → game attributes (primary 100 %, optional secondary 50 %). */
+function AttributeSection() {
+  const { t } = useTranslation();
+  const { categories, categoryAttributes, saveCategoryAttributes } = useData();
+  const byCategory = new Map(categoryAttributes.map((x) => [x.categoryId, x]));
+  const label = (a: Attribute) => `${a} · ${t(`attributes.${a}`)}`;
+
+  return (
+    <section>
+      <h3 className="section-title">{t('settings.attributesTitle')}</h3>
+      <p className="mb-3 text-sm text-muted">{t('settings.attributesHelp')}</p>
+      <div className="overflow-x-auto rounded-md border border-line">
+        <table className="w-full min-w-[480px] text-sm">
+          <thead>
+            <tr className="border-b border-line bg-panel text-left text-xs text-muted">
+              <th className="px-3 py-2 font-medium">{t('fields.category')}</th>
+              <th className="px-3 py-2 font-medium">{t('attributes.primary')}</th>
+              <th className="px-3 py-2 font-medium">{t('attributes.secondary')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {categories.map((c) => {
+              const current = byCategory.get(c.id);
+              const primary = current?.primary ?? null;
+              const secondary = current?.secondary ?? null;
+              return (
+                <tr key={c.id} className="border-b border-line last:border-b-0">
+                  <td className="px-3 py-2">
+                    <Pill color={c.color}>{c.name}</Pill>
+                  </td>
+                  <td className="px-3 py-2">
+                    <select
+                      className="input"
+                      aria-label={t('attributes.primaryFor', { name: c.name })}
+                      value={primary ?? ''}
+                      onChange={(e) => {
+                        const p = (e.target.value || null) as Attribute | null;
+                        saveCategoryAttributes(c.id, p, p && secondary !== p ? secondary : null);
+                      }}
+                    >
+                      <option value="">{t('attributes.none')}</option>
+                      {ATTRIBUTES.map((a) => (
+                        <option key={a} value={a}>
+                          {label(a)}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                  <td className="px-3 py-2">
+                    <select
+                      className="input"
+                      aria-label={t('attributes.secondaryFor', { name: c.name })}
+                      value={secondary ?? ''}
+                      disabled={!primary}
+                      onChange={(e) => primary && saveCategoryAttributes(c.id, primary, (e.target.value || null) as Attribute | null)}
+                    >
+                      <option value="">{t('attributes.none')}</option>
+                      {ATTRIBUTES.filter((a) => a !== primary).map((a) => (
+                        <option key={a} value={a}>
+                          {label(a)}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
+                </tr>
+              );
+            })}
+            {!categories.length && (
+              <tr>
+                <td colSpan={3} className="px-3 py-2 text-muted">
+                  {t('category.empty')}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }

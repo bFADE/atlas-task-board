@@ -19,6 +19,7 @@
     "category_exists": "A category with this name already exists.",
     "category_not_found": "This category no longer exists.",
     "forbidden_host": "Request blocked: Atlas only accepts connections from this computer.",
+    "invalid_attribute": "Invalid attribute.",
     "invalid_categories": "Invalid categories.",
     "invalid_color": "Invalid color.",
     "invalid_columns": "Invalid column order.",
@@ -41,6 +42,7 @@
     "not_found": "Not found.",
     "notes_too_long": "Notes are too long (max. 50,000 characters).",
     "payload_too_large": "This is too large to save. Try shortening the notes.",
+    "same_attribute": "The secondary attribute must be different from the primary.",
     "server_error": "Something went wrong. Please try again.",
     "task_not_found": "This task no longer exists."
   },
@@ -161,7 +163,9 @@
     "boardHelp": "Drag a column header on the Board to change the column order.",
     "resetColumns": "Restore default column order",
     "confirmRestoreSample": "Add back the sample tasks that are missing? Nothing is deleted, and sample tasks you edited are kept as your own.",
-    "sampleRestored_zero": "All sample tasks are already there."
+    "sampleRestored_zero": "All sample tasks are already there.",
+    "attributesTitle": "Category attributes",
+    "attributesHelp": "Choose which attributes each category trains. XP will start counting in a later version."
   },
   "pomodoro": {
     "autoCycle": "Automatic cycle (4 pomodoros, then a long break)",
@@ -234,5 +238,22 @@
   "time": {
     "placeholder": "h:mm AM/PM",
     "invalid": "Use a time like 2:30 PM."
+  },
+  "attributes": {
+    "INT": "Intelligence",
+    "SENSE": "Perception",
+    "STR": "Strength",
+    "AGI": "Agility",
+    "VIT": "Vitality",
+    "MIND": "Mind",
+    "FAITH": "Faith",
+    "CHA": "Charisma",
+    "WILL": "Willpower",
+    "DISC": "Discipline",
+    "primary": "Primary attribute (100%)",
+    "secondary": "Secondary (50%, optional)",
+    "none": "—",
+    "primaryFor": "Primary attribute for {{name}}",
+    "secondaryFor": "Secondary attribute for {{name}}"
   }
 }

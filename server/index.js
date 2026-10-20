@@ -13,14 +13,14 @@ import {
   markNotSample,
 } from './db.js';
 import { readGameConfig } from './game/config.js';
+import { applySuggestion } from './game/attributes.js';
+import { router as categoryAttributes } from './routes/categoryAttributes.js';
+import { HttpError, wrap, MAX_NAME, MAX_NOTES, TIME_RE, isRealDate } from './http.js';
 
 const PORT = Number(process.env.PORT) || 3001;
 const app = express();
 app.disable('x-powered-by');
 
-/** Same limits as the UI (src/lib/types.ts, maxLength on the inputs). */
-const MAX_NAME = 300;
-const MAX_NOTES = 50_000;
 // DNS-rebinding guard: only answer requests addressed to this machine by name or loopback IP
 // (the Vite proxy forwards the browser's Host, e.g. localhost:5173).
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '[::1]']);
@@ -33,36 +33,8 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '1mb' }));
 
 const DEFAULT_POMODORO = { pomodoro: 25, short: 5, long: 15, custom: 10, autoCycle: false };
-const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
-const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
-
-/** YYYY-MM-DD that exists on the calendar (rejects 2026-02-30, 2026-13-45, …). */
-function isRealDate(s) {
-  if (typeof s !== 'string' || !DATE_RE.test(s)) return false;
-  const [y, m, d] = s.split('-').map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  return dt.getUTCFullYear() === y && dt.getUTCMonth() === m - 1 && dt.getUTCDate() === d;
-}
 const COLOR_RE = /^#[0-9a-fA-F]{6}$/;
 
-class HttpError extends Error {
-  constructor(status, code) {
-    super(code);
-    this.status = status;
-    this.code = code;
-  }
-}
-
-const wrap = (fn) => (req, res, next) => {
-  try {
-    const out = fn(req, res);
-    if (out !== undefined) res.json(out);
-    // A handler must either return a body or respond itself; never leave the request hanging.
-    else if (!res.headersSent) throw new Error(`No response from ${req.method} ${req.path}`);
-  } catch (err) {
-    next(err);
-  }
-};
 
 // ---------- Tasks ----------
 
@@ -228,6 +200,7 @@ app.post('/api/categories', wrap((req, res) => {
   const f = categoryFields(req.body, { partial: false });
   const id = uniqueGuard(() =>
     db.prepare('INSERT INTO categories (name, color) VALUES (?, ?)').run(f.name, f.color ?? '#9B9A97').lastInsertRowid);
+  applySuggestion(db, id, f.name);
   res.status(201).json(db.prepare('SELECT id, name, color FROM categories WHERE id = ?').get(id));
 }));
 
@@ -292,6 +265,10 @@ app.put('/api/settings', wrap((req) => {
   setSetting('pomodoro', current);
   return allSettings();
 }));
+
+// ---------- Game: category attributes ----------
+
+app.use('/api/category-attributes', categoryAttributes);
 
 // ---------- Game config (read-only until the engine phases) ----------
 

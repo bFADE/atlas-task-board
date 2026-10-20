@@ -4,6 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runMigrations } from './game/schema.js';
 import { seedGameConfig } from './game/config.js';
+import { applySuggestion } from './game/attributes.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -131,6 +132,7 @@ function sampleCategoryId(name) {
   const row = db.prepare('SELECT id FROM categories WHERE name = ?').get(name);
   const color = INITIAL_CATEGORIES.find((c) => c.name === name)?.color ?? '#9B9A97';
   const id = row ? row.id : Number(db.prepare('INSERT INTO categories (name, color) VALUES (?, ?)').run(name, color).lastInsertRowid);
+  if (!row) applySuggestion(db, id, name);
   setSetting('sampleCategories', { ...ids, [name]: id });
   return id;
 }

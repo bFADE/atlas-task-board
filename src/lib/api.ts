@@ -1,4 +1,4 @@
-import type { Category, PomodoroSettings, SessionSummary, Status, Task, TaskInput } from './types';
+import type { Attribute, Category, CategoryAttributes, PomodoroSettings, SessionSummary, Status, Task, TaskInput } from './types';
 
 type Settings = { pomodoro: PomodoroSettings; boardColumns: Status[] };
 
@@ -42,6 +42,11 @@ export const api = {
   createCategory: (c: Partial<Category>) => request<Category>('POST', '/api/categories', c),
   updateCategory: (id: number, c: Partial<Category>) => request<Category>('PATCH', `/api/categories/${id}`, c),
   deleteCategory: (id: number) => request<void>('DELETE', `/api/categories/${id}`),
+
+  listCategoryAttributes: () => request<CategoryAttributes[]>('GET', '/api/category-attributes'),
+  setCategoryAttributes: (categoryId: number, primary: Attribute, secondary: Attribute | null) =>
+    request<CategoryAttributes>('PUT', `/api/category-attributes/${categoryId}`, { primary, secondary }),
+  clearCategoryAttributes: (categoryId: number) => request<void>('DELETE', `/api/category-attributes/${categoryId}`),
 
   getSettings: () => request<Settings>('GET', '/api/settings'),
   saveSettings: (s: { pomodoro?: Partial<PomodoroSettings>; boardColumns?: Status[] }) =>
