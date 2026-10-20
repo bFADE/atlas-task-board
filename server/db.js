@@ -2,13 +2,18 @@ import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { runMigrations } from './game/schema.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const dataDir = path.join(root, 'data');
+
+// ATLAS_DB_PATH points the app (and the tests) at another database file, e.g. a copy.
+export const DB_PATH = process.env.ATLAS_DB_PATH
+  ? path.resolve(process.env.ATLAS_DB_PATH)
+  : path.join(root, 'data', 'atlas.db');
+const dataDir = path.dirname(DB_PATH);
 fs.mkdirSync(dataDir, { recursive: true });
 
-export const DB_PATH = path.join(dataDir, 'atlas.db');
-migrateLegacyFile(path.join(dataDir, 'tasks.db'), DB_PATH);
+if (!process.env.ATLAS_DB_PATH) migrateLegacyFile(path.join(dataDir, 'tasks.db'), DB_PATH);
 export const db = new Database(DB_PATH);
 
 /**
@@ -32,6 +37,9 @@ db.pragma('foreign_keys = ON');
 
 export const STATUSES = ['backlog', 'todo', 'in_progress', 'blocked', 'done'];
 export const PRIORITIES = ['high', 'medium', 'low'];
+
+// A brand-new file needs no backup before the game migrations.
+const isFresh = !db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'tasks'").get();
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS categories (
@@ -75,6 +83,9 @@ if (!db.prepare('SELECT 1 FROM pragma_table_info(?) WHERE name = ?').get('pomodo
   db.exec('ALTER TABLE pomodoro_sessions ADD COLUMN session_key TEXT');
 }
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS pomodoro_sessions_key ON pomodoro_sessions(session_key)');
+
+// v2 game tables (GAME_DESIGN.md §10), versioned with PRAGMA user_version.
+export const migration = runMigrations(db, { backupDir: path.join(dataDir, 'backups'), isFresh });
 
 export const INITIAL_CATEGORIES = [
   { name: 'Comp and Rhetoric II', color: '#0B6E99' },
