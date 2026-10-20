@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { runMigrations } from './game/schema.js';
+import { seedGameConfig } from './game/config.js';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -86,6 +87,7 @@ db.exec('CREATE UNIQUE INDEX IF NOT EXISTS pomodoro_sessions_key ON pomodoro_ses
 
 // v2 game tables (GAME_DESIGN.md §10), versioned with PRAGMA user_version.
 export const migration = runMigrations(db, { backupDir: path.join(dataDir, 'backups'), isFresh });
+seedGameConfig(db);
 
 export const INITIAL_CATEGORIES = [
   { name: 'Comp and Rhetoric II', color: '#0B6E99' },

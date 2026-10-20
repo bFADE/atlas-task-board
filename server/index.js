@@ -12,6 +12,7 @@ import {
   removeSampleTasks,
   markNotSample,
 } from './db.js';
+import { readGameConfig } from './game/config.js';
 
 const PORT = Number(process.env.PORT) || 3001;
 const app = express();
@@ -291,6 +292,10 @@ app.put('/api/settings', wrap((req) => {
   setSetting('pomodoro', current);
   return allSettings();
 }));
+
+// ---------- Game config (read-only until the engine phases) ----------
+
+app.get('/api/game/config', wrap(() => readGameConfig(db)));
 
 // ---------- Pomodoro sessions ----------
 

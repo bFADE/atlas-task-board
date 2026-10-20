@@ -118,3 +118,26 @@ test('schema constraints hold (end > start, attribute keys, unique XP key)', () 
   assert.throws(() => db.prepare("INSERT INTO debuffs (kind, started_at) VALUES ('rusty', ?)").run(now), /CHECK/, 'rusty needs an attribute');
   db.close();
 });
+
+test('game_config is seeded with every design value and keeps user edits', async () => {
+  const { GAME_CONFIG_DEFAULTS } = await import('../server/game/config.js');
+  const fresh = path.join(tmpDir('config'), 'atlas.db');
+  openWithApp(fresh);
+  let db = new Database(fresh);
+  assert.equal(count(db, 'game_config'), GAME_CONFIG_DEFAULTS.length);
+  const get = (k) => db.prepare('SELECT value, default_value FROM game_config WHERE key = ?').get(k);
+  // Spot checks against GAME_DESIGN.md
+  assert.deepEqual(
+    ['xp.task.low', 'xp.task.medium', 'xp.task.high', 'xp.pomodoro', 'xp.pomodoro.daily_cap', 'xp.softcap.daily', 'level.curve.base', 'level.curve.exponent', 'day.boundary_minutes', 'debuff.fatigue.multiplier', 'rank.S.min_level', 'trial.B.daily_clears'].map((k) => get(k).value),
+    [10, 20, 40, 5, 8, 300, 330, 0.5, 180, 0.8, 70, 21],
+  );
+  // A user edit survives the next start; a deleted key comes back.
+  db.prepare("UPDATE game_config SET value = 350 WHERE key = 'xp.softcap.daily'").run();
+  db.prepare("DELETE FROM game_config WHERE key = 'xp.pomodoro'").run();
+  db.close();
+  openWithApp(fresh);
+  db = new Database(fresh, { readonly: true });
+  assert.deepEqual(get('xp.softcap.daily'), { value: 350, default_value: 300 });
+  assert.equal(get('xp.pomodoro').value, 5);
+  db.close();
+});
